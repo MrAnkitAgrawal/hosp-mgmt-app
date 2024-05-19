@@ -1,9 +1,13 @@
 package com.nkit.hospmgmtapp.domain.entities;
 
+import static jakarta.persistence.FetchType.LAZY;
+
 import jakarta.persistence.*;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -30,14 +34,11 @@ public class BillingE implements Serializable {
   @Column(name = "billing_head", nullable = false)
   private String billingHead;
 
-  @Column(name = "amount", nullable = false)
-  private float amount;
-
   @Column(name = "billing_timestamp", nullable = false)
   private LocalDateTime billingTimestamp;
 
-  @Column(name = "billing_reference")
-  private String billingReference;
+  @OneToMany(mappedBy = "billing", fetch = LAZY)
+  private List<BillItemE> billItems = new ArrayList<>();
 
   @Column(name = "billing_remarks")
   private float billingRemarks;
@@ -49,4 +50,7 @@ public class BillingE implements Serializable {
       updatable = false,
       nullable = false)
   private PatientE patientE;
+
+  @OneToOne(mappedBy = "billReference")
+  private PaymentE payment;
 }

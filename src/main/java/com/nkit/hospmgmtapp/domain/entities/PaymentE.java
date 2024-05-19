@@ -36,8 +36,21 @@ public class PaymentE implements Serializable {
   @Column(name = "payment_mode", nullable = false)
   private PaymentMode paymentMode;
 
+  @Column(name = "payment_mode_reference")
+  private PaymentMode paymentModeReference;
+
   @Column(name = "payment_remark")
   private String paymentRemarks;
 
-  //private List<BillingE> billReferences = new ArrayList<>();
+  @ManyToOne
+  @JoinColumn(
+      name = "patient_id",
+      referencedColumnName = "patient_id",
+      updatable = false,
+      nullable = false)
+  private PatientE patientE;
+
+  @OneToOne
+  @JoinColumn(name = "billing_id", referencedColumnName = "billing_id", nullable = false)
+  private BillingE billReference;
 }
