@@ -1,7 +1,10 @@
 package com.nkit.hospmgmtapp.domain.entities;
 
+import static com.nkit.hospmgmtapp.utils.HospMgmtUtils.parseStringToDate;
 import static jakarta.persistence.FetchType.LAZY;
+import static org.apache.commons.lang3.EnumUtils.getEnumIgnoreCase;
 
+import com.nkit.hospmgmtapp.resources.models.PatientDto;
 import jakarta.persistence.*;
 import java.io.Serial;
 import java.io.Serializable;
@@ -61,4 +64,15 @@ public class PatientE implements Serializable {
 
   @OneToMany(mappedBy = "patientE", fetch = LAZY)
   private List<DialysisScheduleE> dialysisSchedules = new ArrayList<>();
+
+  public PatientE(PatientDto patientDto) {
+    this.firstName = patientDto.getFirstName();
+    this.middleName = patientDto.getMiddleName();
+    this.lastName = patientDto.getLastName();
+    this.dob = parseStringToDate(patientDto.getDob());
+    this.gender = getEnumIgnoreCase(Gender.class, patientDto.getGender());
+    this.whatsAppNumber = patientDto.getWhatsAppNumber();
+    this.otherMobileNumber = patientDto.getOtherMobileNumber();
+    this.emailId = patientDto.getEmailId();
+  }
 }
