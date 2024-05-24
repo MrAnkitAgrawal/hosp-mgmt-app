@@ -1,5 +1,6 @@
 package com.nkit.hospmgmtapp.domain.entities;
 
+import static jakarta.persistence.EnumType.STRING;
 import static jakarta.persistence.FetchType.LAZY;
 
 import jakarta.persistence.*;
@@ -41,6 +42,7 @@ public class DialysisStationE implements Serializable {
   private String dialysisMachineNumber;
 
   @Column(name = "dialysis_station_status", nullable = false)
+  @Enumerated(STRING)
   private DialysisStationStatus dialysisStationStatus;
 
   @Column(name = "last_maintenance_date")

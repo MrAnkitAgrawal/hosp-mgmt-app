@@ -1,11 +1,12 @@
 package com.nkit.hospmgmtapp.domain.entities;
 
+import static jakarta.persistence.EnumType.STRING;
 import static jakarta.persistence.FetchType.LAZY;
 
 import jakarta.persistence.*;
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -29,13 +30,14 @@ public class DialysisSlotE implements Serializable {
   private Long id;
 
   @Column(name = "d_slot_name", nullable = false)
+  @Enumerated(STRING)
   private DialysisSlot name;
 
   @Column(name = "d_slot_start_time", nullable = false)
-  private LocalDateTime startTime;
+  private LocalTime startTime;
 
   @Column(name = "d_slot_end_time", nullable = false)
-  private LocalDateTime endTime;
+  private LocalTime endTime;
 
   @OneToMany(mappedBy = "dialysisSlotE", fetch = LAZY)
   private List<DialysisScheduleE> dialysisSchedules = new ArrayList<>();
