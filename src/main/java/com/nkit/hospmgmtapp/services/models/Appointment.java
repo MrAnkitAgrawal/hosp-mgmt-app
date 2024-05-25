@@ -1,7 +1,6 @@
 package com.nkit.hospmgmtapp.services.models;
 
-import com.nkit.hospmgmtapp.domain.entities.DialysisSlotE;
-import com.nkit.hospmgmtapp.domain.entities.DialysisStationE;
+import com.nkit.hospmgmtapp.domain.entities.DialysisSlot;
 import com.nkit.hospmgmtapp.domain.entities.ScheduleStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,7 +10,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class Appointment {
-  private DialysisStationE dialysisStation;
-  private DialysisSlotE dialysisSlot;
+  private String dStationLabel;
+  private DialysisSlot dSlotName;
   private ScheduleStatus scheduleStatus;
 }

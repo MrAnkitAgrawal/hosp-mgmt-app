@@ -33,7 +33,7 @@ public class DialysisStationE implements Serializable {
   private Long id;
 
   @Column(name = "label", nullable = false)
-  private String dStationLabel;
+  private String stationLabel;
 
   @Column(name = "bed_number", nullable = false)
   private String bedNumber;

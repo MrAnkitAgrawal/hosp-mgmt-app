@@ -37,6 +37,12 @@ public class DialysisScheduleE implements Serializable {
   @Enumerated(EnumType.STRING)
   private ScheduleStatus status;
 
+  @Column(name = "doctor_name")
+  private String doctorName;
+
+  @Column(name = "nursing_staff")
+  private String nursingStaff;
+
   @ManyToOne
   @JoinColumn(
       name = "d_station_id",
