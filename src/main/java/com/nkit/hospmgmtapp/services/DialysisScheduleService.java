@@ -3,11 +3,9 @@ package com.nkit.hospmgmtapp.services;
 import static com.nkit.hospmgmtapp.utils.HospMgmtUtils.parseStringToDate;
 
 import com.nkit.hospmgmtapp.domain.entities.*;
-import com.nkit.hospmgmtapp.domain.repos.DialysisScheduleR;
-import com.nkit.hospmgmtapp.domain.repos.DialysisSlotR;
-import com.nkit.hospmgmtapp.domain.repos.DialysisStationR;
 import com.nkit.hospmgmtapp.resources.models.DialysisScheduleRequestDto;
 import com.nkit.hospmgmtapp.resources.models.DialysisScheduleResponseDto;
+import com.nkit.hospmgmtapp.resources.models.DialysisStatusUpdateRequestDto;
 import com.nkit.hospmgmtapp.services.serviceextns.DialysisScheduleServiceExtn;
 import com.nkit.hospmgmtapp.services.validator.DialysisServiceValidator;
 import java.time.LocalDate;
@@ -47,5 +45,11 @@ public class DialysisScheduleService {
             dSlot,
             dialysisScheduleRequestDto.isScheduleRandomly());
     return new DialysisScheduleResponseDto(scheduleE);
+  }
+
+  public void updateDialysisStatus(
+      Long dialysisScheduleId, DialysisStatusUpdateRequestDto dialysisStatusUpdateRequestDto) {
+    dialysisScheduleServiceExtn.updateDialysisStatus(
+        dialysisScheduleId, dialysisStatusUpdateRequestDto);
   }
 }

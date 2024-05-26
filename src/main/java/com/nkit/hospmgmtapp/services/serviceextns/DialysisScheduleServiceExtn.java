@@ -2,23 +2,20 @@ package com.nkit.hospmgmtapp.services.serviceextns;
 
 import static com.nkit.hospmgmtapp.domain.entities.DialysisStationStatus.ACTIVE;
 import static com.nkit.hospmgmtapp.domain.entities.ScheduleStatus.*;
-import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.NO_DIALYSIS_SCHEDULE_AVAILABLE;
-import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.NO_DIALYSIS_SCHEDULE_AVAILABLE_PER_REQUESTED_STATION_AND_SLOT;
+import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.*;
 import static java.time.LocalDate.now;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.EnumUtils.getEnumIgnoreCase;
 
-import com.nkit.hospmgmtapp.domain.entities.DialysisScheduleE;
-import com.nkit.hospmgmtapp.domain.entities.DialysisSlotE;
-import com.nkit.hospmgmtapp.domain.entities.DialysisStationE;
-import com.nkit.hospmgmtapp.domain.entities.PatientE;
+import com.nkit.hospmgmtapp.domain.entities.*;
 import com.nkit.hospmgmtapp.domain.repos.DialysisScheduleR;
 import com.nkit.hospmgmtapp.domain.repos.DialysisSlotR;
 import com.nkit.hospmgmtapp.domain.repos.DialysisStationR;
+import com.nkit.hospmgmtapp.resources.models.DialysisStatusUpdateRequestDto;
 import com.nkit.hospmgmtapp.services.models.Schedule;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -146,5 +143,30 @@ public class DialysisScheduleServiceExtn {
    */
   public List<DialysisScheduleE> filledDialysisSchedulesForDate(LocalDate date) {
     return dialysisScheduleR.findByScheduleDate(date);
+  }
+
+  /**
+   * Update Dialysis Status to Cancelled or Completed (other status not supported)
+   * 
+   * TODO:
+   *   Can't be COMPLETED more than 1 hr in advance as per slot's End Time
+   *   Requested Status must be valid as status's life cycle
+   *
+   * @param dialysisScheduleId
+   * @param dialysisStatusUpdateRequestDto
+   */
+  public void updateDialysisStatus(
+      Long dialysisScheduleId, DialysisStatusUpdateRequestDto dialysisStatusUpdateRequestDto) {
+    DialysisScheduleE scheduleE =
+        dialysisScheduleR
+            .findById(dialysisScheduleId)
+            .orElseThrow(() -> new RuntimeException(DIALYSIS_SCHEDULE_NOT_FOUND));
+
+    scheduleE.setDoctorName(dialysisStatusUpdateRequestDto.getDoctorName());
+    scheduleE.setNursingStaff(dialysisStatusUpdateRequestDto.getNursingStaff());
+    scheduleE.setStatus(
+        getEnumIgnoreCase(ScheduleStatus.class, dialysisStatusUpdateRequestDto.getStatus()));
+
+    dialysisScheduleR.save(scheduleE);
   }
 }
