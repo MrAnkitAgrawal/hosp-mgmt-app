@@ -178,8 +178,8 @@ public class DialysisScheduleServiceExtn {
     do {
       List<DialysisScheduleE> schedulesPerDate = dialysisScheduleR.findByScheduleDate(temp);
       dialysisSchedules.addAll(schedulesPerDate);
-      temp.plusDays(1);
-    } while (temp.isEqual(dateTo));
+      temp = temp.plusDays(1);
+    } while (!temp.isAfter(dateTo));
 
     return dialysisSchedules;
   }
