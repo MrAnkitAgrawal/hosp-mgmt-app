@@ -1,6 +1,9 @@
 package com.nkit.hospmgmtapp.services;
 
 import static com.nkit.hospmgmtapp.utils.HospMgmtUtils.parseStringToDate;
+import static java.time.LocalDate.now;
+import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.nkit.hospmgmtapp.domain.entities.*;
 import com.nkit.hospmgmtapp.resources.models.DialysisScheduleRequestDto;
@@ -9,6 +12,8 @@ import com.nkit.hospmgmtapp.resources.models.DialysisStatusUpdateRequestDto;
 import com.nkit.hospmgmtapp.services.serviceextns.DialysisScheduleServiceExtn;
 import com.nkit.hospmgmtapp.services.validator.DialysisServiceValidator;
 import java.time.LocalDate;
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -51,5 +56,15 @@ public class DialysisScheduleService {
       Long dialysisScheduleId, DialysisStatusUpdateRequestDto dialysisStatusUpdateRequestDto) {
     dialysisScheduleServiceExtn.updateDialysisStatus(
         dialysisScheduleId, dialysisStatusUpdateRequestDto);
+  }
+
+  public List<DialysisScheduleResponseDto> getDialysisSchedules(
+      String dateFromStr, String dateToStr, Long patientId) {
+    LocalDate dateFrom = isBlank(dateFromStr) ? now() : parseStringToDate(dateFromStr);
+    LocalDate dateTo = isBlank(dateToStr) ? now() : parseStringToDate(dateToStr);
+
+    List<DialysisScheduleE> schedules =
+        dialysisScheduleServiceExtn.getDialysisSchedules(dateFrom, dateTo, patientId);
+    return schedules.stream().map(DialysisScheduleResponseDto::new).collect(toList());
   }
 }

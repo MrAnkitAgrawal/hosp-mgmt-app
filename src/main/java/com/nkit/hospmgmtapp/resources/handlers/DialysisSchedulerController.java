@@ -1,8 +1,5 @@
 package com.nkit.hospmgmtapp.resources.handlers;
 
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.NO_CONTENT;
-
 import com.nkit.hospmgmtapp.resources.models.DialysisScheduleRequestDto;
 import com.nkit.hospmgmtapp.resources.models.DialysisScheduleResponseDto;
 import com.nkit.hospmgmtapp.resources.models.DialysisStatusUpdateRequestDto;
@@ -11,6 +8,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+import static org.springframework.http.HttpStatus.*;
 
 @RestController
 @RequestMapping("/v1/dialysisScheduler")
@@ -23,6 +24,18 @@ public class DialysisSchedulerController {
       @RequestBody @Valid DialysisScheduleRequestDto dialysisScheduleRequestDto) {
     return new ResponseEntity<>(
         dialysisScheduleService.scheduleDialysis(dialysisScheduleRequestDto), CREATED);
+  }
+
+  @GetMapping
+  public ResponseEntity<List<DialysisScheduleResponseDto>> getDialysisSchedules(
+      @RequestParam(required = false) String dateFrom,
+      @RequestParam(required = false) String dateTo,
+      @RequestParam(required = false) Long patientId) {
+    // TODO:
+    //  - dateFrom and dateTo must be valid and not a past date.
+    //  - dateFrom must be previous/same of dateTo.
+    return new ResponseEntity<>(
+        dialysisScheduleService.getDialysisSchedules(dateFrom, dateTo, patientId), OK);
   }
 
   @PutMapping("/{dialysisScheduleId}/status")

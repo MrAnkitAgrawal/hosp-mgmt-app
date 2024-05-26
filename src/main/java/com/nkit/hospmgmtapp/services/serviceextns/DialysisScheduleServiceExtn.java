@@ -15,6 +15,7 @@ import com.nkit.hospmgmtapp.resources.models.DialysisStatusUpdateRequestDto;
 import com.nkit.hospmgmtapp.services.models.Schedule;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -147,7 +148,7 @@ public class DialysisScheduleServiceExtn {
 
   /**
    * Update Dialysis Status to Cancelled or Completed (other status not supported)
-   * 
+   *
    * TODO:
    *   Can't be COMPLETED more than 1 hr in advance as per slot's End Time
    *   Requested Status must be valid as status's life cycle
@@ -168,5 +169,18 @@ public class DialysisScheduleServiceExtn {
         getEnumIgnoreCase(ScheduleStatus.class, dialysisStatusUpdateRequestDto.getStatus()));
 
     dialysisScheduleR.save(scheduleE);
+  }
+
+  public List<DialysisScheduleE> getDialysisSchedules(
+      LocalDate dateFrom, LocalDate dateTo, Long patientId) {
+    List<DialysisScheduleE> dialysisSchedules = new ArrayList<>();
+    LocalDate temp = dateFrom;
+    do {
+      List<DialysisScheduleE> schedulesPerDate = dialysisScheduleR.findByScheduleDate(temp);
+      dialysisSchedules.addAll(schedulesPerDate);
+      temp.plusDays(1);
+    } while (temp.isEqual(dateTo));
+
+    return dialysisSchedules;
   }
 }
