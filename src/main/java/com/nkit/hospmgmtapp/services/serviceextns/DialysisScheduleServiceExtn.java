@@ -2,79 +2,149 @@ package com.nkit.hospmgmtapp.services.serviceextns;
 
 import static com.nkit.hospmgmtapp.domain.entities.DialysisStationStatus.ACTIVE;
 import static com.nkit.hospmgmtapp.domain.entities.ScheduleStatus.*;
+import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.NO_DIALYSIS_SCHEDULE_AVAILABLE;
+import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.NO_DIALYSIS_SCHEDULE_AVAILABLE_PER_REQUESTED_STATION_AND_SLOT;
 import static java.time.LocalDate.now;
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.toList;
 
 import com.nkit.hospmgmtapp.domain.entities.DialysisScheduleE;
+import com.nkit.hospmgmtapp.domain.entities.DialysisSlotE;
+import com.nkit.hospmgmtapp.domain.entities.DialysisStationE;
+import com.nkit.hospmgmtapp.domain.entities.PatientE;
 import com.nkit.hospmgmtapp.domain.repos.DialysisScheduleR;
 import com.nkit.hospmgmtapp.domain.repos.DialysisSlotR;
 import com.nkit.hospmgmtapp.domain.repos.DialysisStationR;
-import com.nkit.hospmgmtapp.services.models.Appointment;
+import com.nkit.hospmgmtapp.services.models.Schedule;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Set;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class DialysisScheduleServiceExtn {
+  private final long DELAY_ACCEPTED_IN_HRS = 2;
+
   private final DialysisStationR dialysisStationR;
   private final DialysisSlotR dialysisSlotR;
   private final DialysisScheduleR dialysisScheduleR;
 
-  public Set<Appointment> possibleDialysisSchedulesForDate() {
-    return dialysisStationR.findByDialysisStationStatus(ACTIVE).stream()
-        .map(
-            s -> {
-              return dialysisSlotR.findAll().stream()
-                  .map(slot -> new Appointment(s.getStationLabel(), slot.getName(), AVAILABLE))
-                  .collect(toSet());
-            })
-        .flatMap(Set::stream)
-        .collect(toSet());
+  public DialysisScheduleE bookDialysisSchedule(
+      PatientE patientE,
+      LocalDate scheduleDate,
+      DialysisStationE dStationE,
+      DialysisSlotE dSlot,
+      boolean scheduleRandomly) {
+    List<Schedule> validSchedules = availableSchedulesForDate(scheduleDate);
+
+    if (validSchedules == null || validSchedules.isEmpty()) {
+      throw new RuntimeException(NO_DIALYSIS_SCHEDULE_AVAILABLE);
+    }
+
+    // Checking if schedule available as per requested station and slot
+    List<Schedule> scheduleAsPerRequest =
+        validSchedules.stream()
+            .filter(
+                s -> dStationE == null || s.getDStationLabel().equals(dStationE.getStationLabel()))
+            .filter(s -> dSlot == null || s.getDSlotName() == dSlot.getName())
+            .collect(toList());
+    if (scheduleAsPerRequest == null || scheduleAsPerRequest.isEmpty()) {
+      if (!scheduleRandomly) {
+        throw new RuntimeException(NO_DIALYSIS_SCHEDULE_AVAILABLE_PER_REQUESTED_STATION_AND_SLOT);
+      } else {
+        return createAndSaveSchedule(patientE, scheduleDate, validSchedules.get(0));
+      }
+    } else {
+      return createAndSaveSchedule(patientE, scheduleDate, scheduleAsPerRequest.get(0));
+    }
   }
 
-  public List<DialysisScheduleE> filledDialysisSchedulesForDate(LocalDate date) {
-    return dialysisScheduleR.findByScheduleDate(date);
+  private DialysisScheduleE createAndSaveSchedule(
+      PatientE patientE, LocalDate scheduleDate, Schedule scheduleToBeBooked) {
+    DialysisScheduleE dialysisScheduleE = new DialysisScheduleE();
+    dialysisScheduleE.setScheduleDate(scheduleDate);
+    dialysisScheduleE.setStatus(SCHEDULED);
+    dialysisScheduleE.setDialysisStationE(
+        dialysisStationR.findByStationLabel(scheduleToBeBooked.getDStationLabel()).get());
+    dialysisScheduleE.setDialysisSlotE(
+        dialysisSlotR.findByName(scheduleToBeBooked.getDSlotName()).get());
+    dialysisScheduleE.setPatientE(patientE);
+
+    dialysisScheduleR.save(dialysisScheduleE);
+
+    return dialysisScheduleE;
   }
 
-  public Set<Appointment> availableSchedulesForDate(LocalDate date) {
-    Set<Appointment> possibleDialysisSchedulesForDate =
+  /**
+   * Return possible and valid schedules as per date for booking
+   *
+   * @param date
+   * @return
+   */
+  public List<Schedule> availableSchedulesForDate(LocalDate date) {
+    // List all schedules which are still available on that date
+    // eg if slot to be booked for today and booking date/time today/14:00 then slot#1 is not
+    // applicable but slot2 (and
+    // further slots) are still possible
+    List<Schedule> possibleDialysisSchedulesForDate =
         date.isEqual(now())
             ? possibleDialysisSchedulesForDate().stream()
                 .filter(
-                    a -> {
-                      return !(dialysisSlotR
-                          .findByName(a.getDSlotName())
+                    schedule -> {
+                      return dialysisSlotR
+                          .findByName(schedule.getDSlotName())
                           .get()
                           .getEndTime()
-                          .isAfter(LocalTime.now().plusHours(2)));
+                          .isAfter(LocalTime.now().plusHours(DELAY_ACCEPTED_IN_HRS));
                     })
-                .collect(toSet())
+                .collect(toList())
             : possibleDialysisSchedulesForDate();
 
     List<DialysisScheduleE> filledSchedules = filledDialysisSchedulesForDate(date);
 
     return possibleDialysisSchedulesForDate.stream()
-        .filter(s -> !isScheduleAlreadyBooked(s, filledSchedules))
-        .collect(toSet());
+        .filter(schedule -> !isScheduleAlreadyBooked(schedule, filledSchedules))
+        .collect(toList());
   }
 
-  private boolean isScheduleAlreadyBooked(Appointment a, List<DialysisScheduleE> filledSchedules) {
+  private boolean isScheduleAlreadyBooked(
+      Schedule schedule, List<DialysisScheduleE> filledSchedules) {
     return filledSchedules.stream()
         .anyMatch(
             s ->
-                s.getDialysisStationE().getStationLabel().equals(a.getDStationLabel())
-                    && s.getDialysisSlotE().getName() == a.getDSlotName()
+                s.getDialysisStationE().getStationLabel().equals(schedule.getDStationLabel())
+                    && s.getDialysisSlotE().getName() == schedule.getDSlotName()
                     && (s.getStatus() == SCHEDULED || s.getStatus() == COMPLETED));
   }
 
-  public Appointment randomAvailableSchedule(LocalDate date) {
-    Set<Appointment> availableSchedules = availableSchedulesForDate(date);
-    return (availableSchedules == null || availableSchedules.isEmpty())
-        ? null
-        : availableSchedules.stream().findFirst().get();
+  /**
+   * Return all schedules possible for one day. out of these schedules few might already be booked
+   * or gone.
+   *
+   * @return List<Schedule>
+   */
+  public List<Schedule> possibleDialysisSchedulesForDate() {
+    return dialysisStationR.findByDialysisStationStatus(ACTIVE).stream()
+        .map(
+            station -> {
+              return dialysisSlotR.findAll().stream()
+                  .map(slot -> new Schedule(station.getStationLabel(), slot.getName(), AVAILABLE))
+                  .collect(toList());
+            })
+        .flatMap(List::stream)
+        .collect(toList());
+  }
+
+  /**
+   * return already booked schedules for particular date irrespective of status which could be
+   * CANCELLED, SCHEDULED or COMPLETE
+   *
+   * @param date
+   * @return
+   */
+  public List<DialysisScheduleE> filledDialysisSchedulesForDate(LocalDate date) {
+    return dialysisScheduleR.findByScheduleDate(date);
   }
 }

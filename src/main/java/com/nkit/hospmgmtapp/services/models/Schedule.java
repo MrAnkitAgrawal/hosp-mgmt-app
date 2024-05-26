@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class Appointment {
+public class Schedule {
   private String dStationLabel;
   private DialysisSlot dSlotName;
   private ScheduleStatus scheduleStatus;
