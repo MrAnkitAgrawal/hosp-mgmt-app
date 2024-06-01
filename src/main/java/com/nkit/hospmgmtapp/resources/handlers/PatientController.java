@@ -47,4 +47,9 @@ public class PatientController {
     patientService.removePatient(patientId);
     return new ResponseEntity<>(NO_CONTENT);
   }
+
+  @GetMapping("/{patientId}/billing")
+  public ResponseEntity<PatientDto> retrievePatientBillingDetails(@PathVariable Long patientId) {
+    return new ResponseEntity<>(patientService.retrievePatientDetailsById(patientId), OK);
+  }
 }

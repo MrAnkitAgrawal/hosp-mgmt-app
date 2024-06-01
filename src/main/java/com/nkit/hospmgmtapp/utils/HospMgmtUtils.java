@@ -1,10 +1,16 @@
 package com.nkit.hospmgmtapp.utils;
 
+import static com.nkit.hospmgmtapp.domain.entities.BillStatus.PAID;
+import static com.nkit.hospmgmtapp.domain.entities.BillStatus.PARTIALLY_PAID;
+import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.PAID_AMOUNT_IS_MORE_THAN_BILL;
 import static com.nkit.hospmgmtapp.utils.HospMgmtConstants.DATE_PATTERN;
 import static java.time.LocalDate.parse;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import com.nkit.hospmgmtapp.domain.entities.BillStatus;
+import com.nkit.hospmgmtapp.domain.entities.BillingE;
+import com.nkit.hospmgmtapp.domain.entities.PaymentE;
 import java.time.LocalDate;
 
 public class HospMgmtUtils {
@@ -24,5 +30,21 @@ public class HospMgmtUtils {
       return null;
     }
     return date.format(ofPattern(DATE_PATTERN));
+  }
+
+  public static BillStatus processPayment(BillingE billingE, PaymentE paymentE) {
+    float totalBillAmount =
+        billingE.getBillItems().stream()
+            .map(billItemE -> billItemE.getAmount())
+            .reduce(Float::sum)
+            .get();
+    float balance = totalBillAmount - paymentE.getPaidAmount();
+    if (balance == 0) {
+      return PAID;
+    } else if (balance > 0) {
+      return PARTIALLY_PAID;
+    } else {
+      throw new RuntimeException(PAID_AMOUNT_IS_MORE_THAN_BILL);
+    }
   }
 }

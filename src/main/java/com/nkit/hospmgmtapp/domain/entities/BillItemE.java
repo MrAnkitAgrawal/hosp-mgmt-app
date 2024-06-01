@@ -1,5 +1,6 @@
 package com.nkit.hospmgmtapp.domain.entities;
 
+import com.nkit.hospmgmtapp.resources.models.BillItemDto;
 import jakarta.persistence.*;
 import java.io.Serial;
 import java.io.Serializable;
@@ -33,4 +34,9 @@ public class BillItemE implements Serializable {
   private float amount;
 
   @ManyToOne private BillingE billing;
+
+  public BillItemE(BillItemDto billItemDto) {
+    this.billItem = billItemDto.getBillItem();
+    this.amount = billItemDto.getAmount();
+  }
 }

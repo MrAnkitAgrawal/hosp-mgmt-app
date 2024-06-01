@@ -67,6 +67,9 @@ public class DialysisScheduleE implements Serializable {
       updatable = false)
   private PatientE patientE;
 
+  @OneToOne(mappedBy = "dialysisScheduleE")
+  private BillingE billingE;
+
   @CreationTimestamp
   @Column(name = "create_timestamp", nullable = false, updatable = false)
   private LocalDateTime createTimestamp;

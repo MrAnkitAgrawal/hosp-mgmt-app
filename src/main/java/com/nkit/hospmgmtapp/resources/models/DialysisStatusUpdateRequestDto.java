@@ -22,4 +22,13 @@ public class DialysisStatusUpdateRequestDto {
 
   @JsonProperty("nursingStaffName")
   private String nursingStaff;
+
+  @JsonProperty("billingDetails")
+  private BillingDto billingDetails;
+
+  @JsonProperty("paymentDetails")
+  private PaymentDto paymentDto;
+
+  @JsonProperty("nextDialysisDetails")
+  private DialysisScheduleRequestDto nextDialysisDetails;
 }

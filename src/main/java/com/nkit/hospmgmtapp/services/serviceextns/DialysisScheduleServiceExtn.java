@@ -149,14 +149,14 @@ public class DialysisScheduleServiceExtn {
   /**
    * Update Dialysis Status to Cancelled or Completed (other status not supported)
    *
-   * TODO:
-   *   Can't be COMPLETED more than 1 hr in advance as per slot's End Time
-   *   Requested Status must be valid as status's life cycle
+   * <p>TODO: Can't be COMPLETED more than 1 hr in advance as per slot's End Time Requested Status
+   * must be valid as status's life cycle
    *
    * @param dialysisScheduleId
    * @param dialysisStatusUpdateRequestDto
+   * @return
    */
-  public void updateDialysisStatus(
+  public DialysisScheduleE updateDialysisStatus(
       Long dialysisScheduleId, DialysisStatusUpdateRequestDto dialysisStatusUpdateRequestDto) {
     DialysisScheduleE scheduleE =
         dialysisScheduleR
@@ -169,6 +169,7 @@ public class DialysisScheduleServiceExtn {
         getEnumIgnoreCase(ScheduleStatus.class, dialysisStatusUpdateRequestDto.getStatus()));
 
     dialysisScheduleR.save(scheduleE);
+    return scheduleE;
   }
 
   public List<DialysisScheduleE> getDialysisSchedules(
@@ -183,4 +184,6 @@ public class DialysisScheduleServiceExtn {
 
     return dialysisSchedules;
   }
+
+
 }

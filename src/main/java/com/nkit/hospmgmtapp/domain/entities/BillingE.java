@@ -1,7 +1,10 @@
 package com.nkit.hospmgmtapp.domain.entities;
 
+import static jakarta.persistence.EnumType.STRING;
 import static jakarta.persistence.FetchType.LAZY;
+import static java.util.stream.Collectors.toList;
 
+import com.nkit.hospmgmtapp.resources.models.BillingDto;
 import jakarta.persistence.*;
 import java.io.Serial;
 import java.io.Serializable;
@@ -12,6 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "Billing")
@@ -35,13 +39,18 @@ public class BillingE implements Serializable {
   private String billingHead;
 
   @Column(name = "billing_timestamp", nullable = false)
+  @UpdateTimestamp
   private LocalDateTime billingTimestamp;
+
+  @Column(name = "billing_remarks")
+  private String billingRemarks;
+
+  @Column(name = "bill_status")
+  @Enumerated(STRING)
+  private BillStatus billStatus;
 
   @OneToMany(mappedBy = "billing", fetch = LAZY)
   private List<BillItemE> billItems = new ArrayList<>();
-
-  @Column(name = "billing_remarks")
-  private float billingRemarks;
 
   @ManyToOne
   @JoinColumn(
@@ -51,6 +60,14 @@ public class BillingE implements Serializable {
       nullable = false)
   private PatientE patientE;
 
+  @OneToOne private DialysisScheduleE dialysisScheduleE;
+
   @OneToOne(mappedBy = "billReference")
   private PaymentE payment;
+
+  public BillingE(BillingDto billingDto) {
+    this.billingHead = billingDto.getBillingHead();
+    this.billingRemarks = billingDto.getBillingRemarks();
+    this.billItems = billingDto.getBillItems().stream().map(BillItemE::new).collect(toList());
+  }
 }

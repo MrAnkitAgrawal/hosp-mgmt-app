@@ -1,19 +1,18 @@
 package com.nkit.hospmgmtapp.services;
 
+import static com.nkit.hospmgmtapp.domain.entities.BillStatus.DUE;
 import static com.nkit.hospmgmtapp.utils.HospMgmtUtils.parseStringToDate;
 import static java.time.LocalDate.now;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.nkit.hospmgmtapp.domain.entities.*;
-import com.nkit.hospmgmtapp.resources.models.DialysisScheduleRequestDto;
-import com.nkit.hospmgmtapp.resources.models.DialysisScheduleResponseDto;
-import com.nkit.hospmgmtapp.resources.models.DialysisStatusUpdateRequestDto;
+import com.nkit.hospmgmtapp.resources.models.*;
 import com.nkit.hospmgmtapp.services.serviceextns.DialysisScheduleServiceExtn;
 import com.nkit.hospmgmtapp.services.validator.DialysisServiceValidator;
+import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.List;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +21,7 @@ import org.springframework.stereotype.Component;
 public class DialysisScheduleService {
   private final DialysisScheduleServiceExtn dialysisScheduleServiceExtn;
   private final DialysisServiceValidator dialysisServiceValidator;
+  private final BillingMgmtService billingMgmtService;
 
   public DialysisScheduleResponseDto scheduleDialysis(
       DialysisScheduleRequestDto dialysisScheduleRequestDto) {
@@ -52,10 +52,30 @@ public class DialysisScheduleService {
     return new DialysisScheduleResponseDto(scheduleE);
   }
 
+  @Transactional
   public void updateDialysisStatus(
       Long dialysisScheduleId, DialysisStatusUpdateRequestDto dialysisStatusUpdateRequestDto) {
-    dialysisScheduleServiceExtn.updateDialysisStatus(
-        dialysisScheduleId, dialysisStatusUpdateRequestDto);
+    DialysisScheduleE currentScheduleE =
+        dialysisScheduleServiceExtn.updateDialysisStatus(
+            dialysisScheduleId, dialysisStatusUpdateRequestDto);
+
+    // check and book next dialysis schedule
+    DialysisScheduleRequestDto nextDialysisDetails =
+        dialysisStatusUpdateRequestDto.getNextDialysisDetails();
+    if (nextDialysisDetails != null) {
+      nextDialysisDetails.setPatientId(currentScheduleE.getPatientE().getPatientId());
+      scheduleDialysis(nextDialysisDetails);
+    }
+
+    // Add bill details
+    BillingDto billingDto = dialysisStatusUpdateRequestDto.getBillingDetails();
+    if (billingDto != null) {
+      BillingE billingE = new BillingE(billingDto);
+      billingE.setPatientE(currentScheduleE.getPatientE());
+      billingE.setDialysisScheduleE(currentScheduleE);
+      billingE.setBillStatus(DUE);
+      billingMgmtService.saveBilling(billingE);
+    }
   }
 
   public List<DialysisScheduleResponseDto> getDialysisSchedules(
