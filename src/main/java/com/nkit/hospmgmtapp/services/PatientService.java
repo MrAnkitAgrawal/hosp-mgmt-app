@@ -4,6 +4,7 @@ import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.PATIENT_NOT_FOU
 import static java.util.stream.Collectors.toList;
 
 import com.nkit.hospmgmtapp.domain.entities.PatientE;
+import com.nkit.hospmgmtapp.domain.repos.InsuranceR;
 import com.nkit.hospmgmtapp.domain.repos.PatientR;
 import com.nkit.hospmgmtapp.resources.models.*;
 import java.util.List;
@@ -14,9 +15,16 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PatientService {
   private final PatientR patientR;
+  private final InsuranceR insuranceR;
 
   public Long createPatient(PatientDto patientDto) {
-    return patientR.save(new PatientE(patientDto)).getPatientId();
+    PatientE patientE = new PatientE(patientDto);
+    patientE.getInsurances().forEach(i -> i.setPatientE(patientE));
+
+    Long patientId = patientR.save(patientE).getPatientId();
+    insuranceR.saveAll(patientE.getInsurances());
+
+    return patientId;
   }
 
   public PatientDto retrievePatientById(Long patientId) {
@@ -29,17 +37,20 @@ public class PatientService {
 
   public void updatePatient(Long patientId, PatientDto patientDto) {
     PatientE existingPatientE = getPatientE(patientId);
+    existingPatientE.getInsurances().forEach(insuranceR::delete);
+
     PatientE updatedPatientE = new PatientE(patientDto);
     updatedPatientE.setPatientId(existingPatientE.getPatientId());
+    updatedPatientE.getInsurances().forEach(i -> i.setPatientE(updatedPatientE));
+
     patientR.save(updatedPatientE);
+    insuranceR.saveAll(updatedPatientE.getInsurances());
   }
 
   public void removePatient(Long patientId) {
-    patientR.delete(getPatientE(patientId));
-  }
-
-  private PatientE getPatientE(Long patientId) {
-    return patientR.findById(patientId).orElseThrow(() -> new RuntimeException(PATIENT_NOT_FOUND));
+    PatientE patientE = getPatientE(patientId);
+    patientE.getInsurances().forEach(insuranceR::delete);
+    patientR.delete(patientE);
   }
 
   public PatientDto retrievePatientDetailsById(Long patientId) {
@@ -49,5 +60,9 @@ public class PatientService {
     patientDetailsDto.setBillingDetails(
         patientE.getBills().stream().map(BillingDetailsDto::new).collect(toList()));
     return patientDetailsDto;
+  }
+
+  private PatientE getPatientE(Long patientId) {
+    return patientR.findById(patientId).orElseThrow(() -> new RuntimeException(PATIENT_NOT_FOUND));
   }
 }
