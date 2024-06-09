@@ -4,10 +4,7 @@ import com.nkit.hospmgmtapp.resources.models.BillItemDto;
 import jakarta.persistence.*;
 import java.io.Serial;
 import java.io.Serializable;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @Entity
 @Table(name = "Bill_Item")

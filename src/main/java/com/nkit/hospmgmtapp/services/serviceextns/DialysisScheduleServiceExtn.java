@@ -158,10 +158,7 @@ public class DialysisScheduleServiceExtn {
    */
   public DialysisScheduleE updateDialysisStatus(
       Long dialysisScheduleId, DialysisStatusUpdateRequestDto dialysisStatusUpdateRequestDto) {
-    DialysisScheduleE scheduleE =
-        dialysisScheduleR
-            .findById(dialysisScheduleId)
-            .orElseThrow(() -> new RuntimeException(DIALYSIS_SCHEDULE_NOT_FOUND));
+    DialysisScheduleE scheduleE = getScheduleEntity(dialysisScheduleId);
 
     scheduleE.setDoctorName(dialysisStatusUpdateRequestDto.getDoctorName());
     scheduleE.setNursingStaff(dialysisStatusUpdateRequestDto.getNursingStaff());
@@ -185,5 +182,16 @@ public class DialysisScheduleServiceExtn {
     return dialysisSchedules;
   }
 
-
+  /**
+   * Check and return dialysis schedule by id from DB. Throw DIALYSIS_SCHEDULE_NOT_FOUND exception
+   * if not found.
+   *
+   * @param dialysisScheduleId
+   * @return DialysisScheduleE
+   */
+  public DialysisScheduleE getScheduleEntity(Long dialysisScheduleId) {
+    return dialysisScheduleR
+        .findById(dialysisScheduleId)
+        .orElseThrow(() -> new RuntimeException(DIALYSIS_SCHEDULE_NOT_FOUND));
+  }
 }
