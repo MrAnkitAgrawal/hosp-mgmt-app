@@ -1,8 +1,8 @@
 package com.nkit.hospmgmtapp.services;
 
+import static com.nkit.hospmgmtapp.domain.entities.BillStatus.DUE;
 import static com.nkit.hospmgmtapp.domain.entities.BillStatus.OPEN;
-import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.BILL_ITEMS_NOT_PROVIDED;
-import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.BILL_NOT_OPENED_FOR_UPDATE;
+import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.*;
 import static java.util.stream.Collectors.toList;
 
 import com.nkit.hospmgmtapp.domain.entities.BillItemE;
@@ -57,8 +57,11 @@ public class BillingMgmtService {
   }
 
   public BillingDto getDialysisBillingDetails(long dialysisScheduleId) {
-    return new BillingDto(
-        dialysisScheduleServiceExtn.getScheduleEntity(dialysisScheduleId).getBillingE());
+    DialysisScheduleE scheduleE = dialysisScheduleServiceExtn.getScheduleEntity(dialysisScheduleId);
+    if (scheduleE.getBillingE() == null) {
+      throw new RuntimeException(DIALYSIS_BILLING_IS_NOT_AVAILABLE);
+    }
+    return new BillingDto(scheduleE.getBillingE());
   }
 
   /**
@@ -107,5 +110,25 @@ public class BillingMgmtService {
   private void saveNewBillingDetails(BillingE billingE) {
     billingR.save(billingE);
     billItemR.saveAll(billingE.getBillItems());
+  }
+
+  public void calculateTotalBillAndSetStatusAsDue(BillingE billingE) {
+    calculateTotalBill(billingE);
+    billingE.setBillStatus(DUE);
+    billingR.save(billingE);
+  }
+
+  /**
+   * Calculate and set total bill amount
+   *
+   * @param billingE {@link BillingE}
+   */
+  public void calculateTotalBill(BillingE billingE) {
+    billingE.setTotalBill(
+        billingE.getBillItems().stream()
+            .map(item -> item.getAmount())
+            .filter(itemAmount -> itemAmount != null)
+            .reduce(Float::sum)
+            .get());
   }
 }

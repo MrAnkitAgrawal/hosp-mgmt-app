@@ -1,6 +1,6 @@
 package com.nkit.hospmgmtapp.services;
 
-import static com.nkit.hospmgmtapp.domain.entities.BillStatus.DUE;
+import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.DIALYSIS_BILLING_IS_NOT_AVAILABLE;
 import static com.nkit.hospmgmtapp.utils.HospMgmtUtils.parseStringToDate;
 import static java.time.LocalDate.now;
 import static java.util.stream.Collectors.toList;
@@ -59,22 +59,20 @@ public class DialysisScheduleService {
         dialysisScheduleServiceExtn.updateDialysisStatus(
             dialysisScheduleId, dialysisStatusUpdateRequestDto);
 
+    // Calculate total bills and update billing status to DUE
+    if (currentScheduleE.getBillingE() == null
+        || currentScheduleE.getBillingE().getBillItems() == null
+        || currentScheduleE.getBillingE().getBillItems().isEmpty()) {
+      throw new RuntimeException(DIALYSIS_BILLING_IS_NOT_AVAILABLE);
+    }
+    billingMgmtService.calculateTotalBillAndSetStatusAsDue(currentScheduleE.getBillingE());
+
     // check and book next dialysis schedule
     DialysisScheduleRequestDto nextDialysisDetails =
         dialysisStatusUpdateRequestDto.getNextDialysisDetails();
     if (nextDialysisDetails != null) {
       nextDialysisDetails.setPatientId(currentScheduleE.getPatientE().getPatientId());
       scheduleDialysis(nextDialysisDetails);
-    }
-
-    // Add bill details
-    BillingDto billingDto = dialysisStatusUpdateRequestDto.getBillingDetails();
-    if (billingDto != null) {
-      BillingE billingE = new BillingE(billingDto);
-      billingE.setPatientE(currentScheduleE.getPatientE());
-      billingE.setDialysisScheduleE(currentScheduleE);
-      billingE.setBillStatus(DUE);
-      billingMgmtService.saveBilling(billingE);
     }
   }
 

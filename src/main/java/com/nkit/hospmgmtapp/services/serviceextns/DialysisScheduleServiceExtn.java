@@ -5,7 +5,6 @@ import static com.nkit.hospmgmtapp.domain.entities.ScheduleStatus.*;
 import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.*;
 import static java.time.LocalDate.now;
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang3.EnumUtils.getEnumIgnoreCase;
 
 import com.nkit.hospmgmtapp.domain.entities.*;
 import com.nkit.hospmgmtapp.domain.repos.DialysisScheduleR;
@@ -18,6 +17,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.EnumUtils;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -153,17 +153,21 @@ public class DialysisScheduleServiceExtn {
    * must be valid as status's life cycle
    *
    * @param dialysisScheduleId
-   * @param dialysisStatusUpdateRequestDto
-   * @return
+   * @param dialysisStatusUpdateRequestDto {@link DialysisStatusUpdateRequestDto}
+   * @return DialysisScheduleE
    */
   public DialysisScheduleE updateDialysisStatus(
       Long dialysisScheduleId, DialysisStatusUpdateRequestDto dialysisStatusUpdateRequestDto) {
     DialysisScheduleE scheduleE = getScheduleEntity(dialysisScheduleId);
 
-    scheduleE.setDoctorName(dialysisStatusUpdateRequestDto.getDoctorName());
-    scheduleE.setNursingStaff(dialysisStatusUpdateRequestDto.getNursingStaff());
-    scheduleE.setStatus(
-        getEnumIgnoreCase(ScheduleStatus.class, dialysisStatusUpdateRequestDto.getStatus()));
+    ScheduleStatus dialysisStatus =
+        EnumUtils.getEnumIgnoreCase(
+            ScheduleStatus.class, dialysisStatusUpdateRequestDto.getStatus());
+    if (dialysisStatus == COMPLETED) {
+      scheduleE.setDoctorName(dialysisStatusUpdateRequestDto.getDoctorName());
+      scheduleE.setNursingStaff(dialysisStatusUpdateRequestDto.getNursingStaff());
+    }
+    scheduleE.setStatus(dialysisStatus);
 
     dialysisScheduleR.save(scheduleE);
     return scheduleE;

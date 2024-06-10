@@ -34,7 +34,7 @@ public class DialysisSchedulerController {
       @RequestParam(required = false) String dateTo,
       @RequestParam(required = false) Long patientId) {
     // TODO:
-    //  - dateFrom and dateTo must be valid and not a past date.
+    //  - dateFrom and dateTo must be valid.
     //  - dateFrom must be previous/same of dateTo.
     return new ResponseEntity<>(
         dialysisScheduleService.getDialysisSchedules(dateFrom, dateTo, patientId), OK);

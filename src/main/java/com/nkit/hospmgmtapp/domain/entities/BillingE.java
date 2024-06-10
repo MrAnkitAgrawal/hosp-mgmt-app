@@ -49,6 +49,9 @@ public class BillingE implements Serializable {
   @Enumerated(STRING)
   private BillStatus billStatus;
 
+  @Column(name = "total_bill")
+  private Float totalBill;
+
   @OneToMany(mappedBy = "billing", fetch = LAZY)
   private List<BillItemE> billItems = new ArrayList<>();
 

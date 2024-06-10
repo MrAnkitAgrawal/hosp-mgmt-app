@@ -19,6 +19,7 @@ import lombok.ToString;
       "billingTimestamp",
       "billingHead",
       "billingRemarks",
+      "totalBillAmount",
       "billStatus",
       "billItems"
     })

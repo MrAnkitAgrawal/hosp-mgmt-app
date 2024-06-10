@@ -16,6 +16,8 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @ToString
+// TODO Doctor and Staff must be provided if dialysis COMPLETED and not allowed in CANCELLED
+// TODO Declaration must be true if COMPLETED
 public class DialysisStatusUpdateRequestDto {
   @JsonProperty("dialysisStatus")
   @NotNull(message = DIALYSIS_SCHEDULE_STATUS_NOT_PROVIDED)
@@ -30,12 +32,9 @@ public class DialysisStatusUpdateRequestDto {
   @JsonProperty("nursingStaffName")
   private String nursingStaff;
 
-  @JsonProperty("billingDetails")
-  private BillingDto billingDetails;
-
-  @JsonProperty("paymentDetails")
-  private PaymentDto paymentDto;
-
   @JsonProperty("nextDialysisDetails")
   private DialysisScheduleRequestDto nextDialysisDetails;
+
+  @JsonProperty("declareThatBillCheckedAndVerifiedWithCustomer")
+  private boolean declareThatBillCheckedAndVerifiedWithCustomer;
 }
