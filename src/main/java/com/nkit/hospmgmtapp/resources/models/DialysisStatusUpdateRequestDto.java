@@ -1,7 +1,12 @@
 package com.nkit.hospmgmtapp.resources.models;
 
+import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.DIALYSIS_SCHEDULE_STATUS_CAN_BE_CANCELLED_OR_COMPLETED;
+import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.DIALYSIS_SCHEDULE_STATUS_NOT_PROVIDED;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotBlank;
+import com.nkit.hospmgmtapp.domain.entities.ScheduleStatus;
+import com.nkit.hospmgmtapp.validators.annotations.ValidDialysisClosureStatus;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,9 +17,11 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 public class DialysisStatusUpdateRequestDto {
-  // TODO must be valid as per enum;; support just Cancelled and Completed;;
-  @NotBlank(message = "DIALYSIS_SCHEDULE_STATUS_NOT_PROVIDED")
   @JsonProperty("dialysisStatus")
+  @NotNull(message = DIALYSIS_SCHEDULE_STATUS_NOT_PROVIDED)
+  @ValidDialysisClosureStatus(
+      targetClassType = ScheduleStatus.class,
+      message = DIALYSIS_SCHEDULE_STATUS_CAN_BE_CANCELLED_OR_COMPLETED)
   private String status;
 
   @JsonProperty("doctorName")
