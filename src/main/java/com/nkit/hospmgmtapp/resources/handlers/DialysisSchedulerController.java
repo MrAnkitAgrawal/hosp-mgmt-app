@@ -55,4 +55,11 @@ public class DialysisSchedulerController {
     billingMgmtService.addOrUpdateBilling(dialysisScheduleId, billingDetails);
     return new ResponseEntity<>(NO_CONTENT);
   }
+
+  @GetMapping("/{dialysisScheduleId}/billing")
+  public ResponseEntity<BillingDto> getDialysisBillingDetails(
+      @PathVariable long dialysisScheduleId) {
+    return new ResponseEntity<>(
+        billingMgmtService.getDialysisBillingDetails(dialysisScheduleId), OK);
+  }
 }

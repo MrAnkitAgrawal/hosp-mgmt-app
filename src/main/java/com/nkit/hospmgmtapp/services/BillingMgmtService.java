@@ -56,6 +56,11 @@ public class BillingMgmtService {
     }
   }
 
+  public BillingDto getDialysisBillingDetails(long dialysisScheduleId) {
+    return new BillingDto(
+        dialysisScheduleServiceExtn.getScheduleEntity(dialysisScheduleId).getBillingE());
+  }
+
   /**
    * Updating billing and bill items.
    *
