@@ -10,7 +10,7 @@ import lombok.*;
 @Table(name = "Bill_Item")
 @Getter
 @Setter
-@ToString
+@ToString(exclude = {"billing"})
 @NoArgsConstructor
 public class BillItemE implements Serializable {
   @Serial private static final long serialVersionUID = -1853525879774366183L;
@@ -24,16 +24,31 @@ public class BillItemE implements Serializable {
   @Column(name = "bill_item_id")
   private Long itemId;
 
-  @Column(name = "bill_item", nullable = false)
-  private String billItem;
+  @Column(name = "bill_item_type", nullable = false)
+  private String billItemType;
+
+  @Column(name = "bill_item_name", nullable = false)
+  private String billItemName;
+
+  @Column(name = "item_quantity")
+  private Integer itemQuantity;
 
   @Column(name = "amount", nullable = false)
-  private float amount;
+  private Float amount;
 
-  @ManyToOne private BillingE billing;
+  @ManyToOne
+  @JoinColumn(
+      referencedColumnName = "billing_id",
+      name = "billing_id",
+      nullable = false,
+      updatable = false)
+  private BillingE billing;
 
   public BillItemE(BillItemDto billItemDto) {
-    this.billItem = billItemDto.getBillItem();
+    this.itemId = billItemDto.getItemId();
+    this.billItemType = billItemDto.getBillItemType();
+    this.billItemName = billItemDto.getBillItemName();
+    this.itemQuantity = billItemDto.getItemQuantity();
     this.amount = billItemDto.getAmount();
   }
 }

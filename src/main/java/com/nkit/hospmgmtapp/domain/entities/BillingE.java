@@ -21,7 +21,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Table(name = "Billing")
 @Getter
 @Setter
-@ToString
+@ToString(exclude = {"billItems", "patientE", "dialysisScheduleE", "payment"})
 @NoArgsConstructor
 public class BillingE implements Serializable {
   @Serial private static final long serialVersionUID = 7316969804553613076L;
@@ -60,7 +60,9 @@ public class BillingE implements Serializable {
       nullable = false)
   private PatientE patientE;
 
-  @OneToOne private DialysisScheduleE dialysisScheduleE;
+  @OneToOne
+  @JoinColumn(referencedColumnName = "d_schedule_id", name = "d_schedule_id")
+  private DialysisScheduleE dialysisScheduleE;
 
   @OneToOne(mappedBy = "billReference")
   private PaymentE payment;

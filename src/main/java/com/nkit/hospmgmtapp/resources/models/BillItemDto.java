@@ -12,14 +12,26 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 public class BillItemDto {
-  @JsonProperty("billItem")
-  private String billItem;
+  @JsonProperty("itemId")
+  private Long itemId;
+
+  @JsonProperty("billItemType")
+  private String billItemType;
+
+  @JsonProperty("billItemName")
+  private String billItemName;
+
+  @JsonProperty("itemQuantity")
+  private Integer itemQuantity;
 
   @JsonProperty("amount")
-  private float amount;
+  private Float amount;
 
   public BillItemDto(BillItemE billItemE) {
-    this.billItem = billItemE.getBillItem();
+    this.itemId = billItemE.getItemId();
+    this.billItemType = billItemE.getBillItemType();
+    this.billItemName = billItemE.getBillItemName();
+    this.itemQuantity = billItemE.getItemQuantity();
     this.amount = billItemE.getAmount();
   }
 }
