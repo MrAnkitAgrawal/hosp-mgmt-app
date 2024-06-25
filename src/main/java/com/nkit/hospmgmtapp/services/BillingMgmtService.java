@@ -50,7 +50,13 @@ public class BillingMgmtService {
       requestedBillingE.setBillStatus(OPEN);
       requestedBillingE.setDialysisScheduleE(dialysisScheduleE);
       requestedBillingE.setPatientE(dialysisScheduleE.getPatientE());
-      requestedBillingE.getBillItems().forEach(item -> item.setBilling(requestedBillingE));
+      requestedBillingE
+          .getBillItems()
+          .forEach(
+              item -> {
+                item.setItemId(null);
+                item.setBilling(requestedBillingE);
+              });
 
       saveNewBillingDetails(requestedBillingE);
     }

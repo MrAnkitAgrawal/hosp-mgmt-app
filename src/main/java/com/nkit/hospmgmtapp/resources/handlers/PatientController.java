@@ -3,6 +3,7 @@ package com.nkit.hospmgmtapp.resources.handlers;
 import static org.springframework.http.HttpStatus.*;
 
 import com.nkit.hospmgmtapp.resources.models.PatientDto;
+import com.nkit.hospmgmtapp.resources.models.PaymentDto;
 import com.nkit.hospmgmtapp.services.PatientService;
 import jakarta.validation.Valid;
 import java.util.HashMap;
@@ -51,5 +52,12 @@ public class PatientController {
   @GetMapping("/{patientId}/billing")
   public ResponseEntity<PatientDto> retrievePatientBillingDetails(@PathVariable Long patientId) {
     return new ResponseEntity<>(patientService.retrievePatientDetailsById(patientId), OK);
+  }
+
+  @PostMapping("/{patientId}/payment")
+  public ResponseEntity<PatientDto> addOrUpdatePatientPaymentDetails(
+      @PathVariable Long patientId, @RequestBody @Valid PaymentDto paymentDto) {
+    patientService.addPatientPaymentDetails(patientId, paymentDto);
+    return new ResponseEntity<>(NO_CONTENT);
   }
 }

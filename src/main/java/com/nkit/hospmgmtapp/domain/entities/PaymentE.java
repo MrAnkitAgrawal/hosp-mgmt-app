@@ -4,6 +4,7 @@ import static jakarta.persistence.EnumType.STRING;
 import static org.apache.commons.lang3.EnumUtils.getEnumIgnoreCase;
 
 import com.nkit.hospmgmtapp.resources.models.PaymentDto;
+import com.nkit.hospmgmtapp.resources.models.PaymentType;
 import jakarta.persistence.*;
 import java.io.Serial;
 import java.io.Serializable;
@@ -32,19 +33,20 @@ public class PaymentE implements Serializable {
   @Column(name = "payment_id", nullable = false, updatable = false)
   private Long paymentId;
 
+  @Column(name = "payment_type", nullable = false, updatable = false)
+  @Enumerated(STRING)
+  private PaymentType paymentType;
+
   @Column(name = "payment_timestamp", nullable = false)
   @UpdateTimestamp
   private LocalDateTime paymentTimestamp;
 
-  @Column(name = "paid_amount", nullable = false)
-  private float paidAmount;
+  @Column(name = "amount", nullable = false)
+  private float amount;
 
   @Column(name = "payment_mode", nullable = false)
   @Enumerated(STRING)
   private PaymentMode paymentMode;
-
-  @Column(name = "payment_mode_reference")
-  private String paymentModeReference;
 
   @Column(name = "payment_remark")
   private String paymentRemarks;
@@ -57,14 +59,11 @@ public class PaymentE implements Serializable {
       nullable = false)
   private PatientE patientE;
 
-  @OneToOne
-  @JoinColumn(name = "billing_id", referencedColumnName = "billing_id", nullable = false)
-  private BillingE billReference;
-
   public PaymentE(PaymentDto paymentDto) {
-    this.paidAmount = paymentDto.getPaidAmount();
+    this.paymentId = paymentDto.getPaymentId();
+    this.paymentType = getEnumIgnoreCase(PaymentType.class, paymentDto.getPaymentType());
+    this.amount = paymentDto.getAmount();
     this.paymentMode = getEnumIgnoreCase(PaymentMode.class, paymentDto.getPaymentMode());
-    this.paymentModeReference = paymentDto.getPaymentModeReference();
     this.paymentRemarks = paymentDto.getPaymentRemarks();
   }
 }

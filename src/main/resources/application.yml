@@ -16,4 +16,4 @@ server:
     context-path: /hosp-mgmt
 
 logging.level:
-  org.hibernate: TRACE
+  org.hibernate: INFO

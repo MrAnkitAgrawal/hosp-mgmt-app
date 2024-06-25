@@ -31,20 +31,4 @@ public class HospMgmtUtils {
     }
     return date.format(ofPattern(DATE_PATTERN));
   }
-
-  public static BillStatus processPayment(BillingE billingE, PaymentE paymentE) {
-    float totalBillAmount =
-        billingE.getBillItems().stream()
-            .map(billItemE -> billItemE.getAmount())
-            .reduce(Float::sum)
-            .get();
-    float balance = totalBillAmount - paymentE.getPaidAmount();
-    if (balance == 0) {
-      return PAID;
-    } else if (balance > 0) {
-      return PARTIALLY_PAID;
-    } else {
-      throw new RuntimeException(PAID_AMOUNT_IS_MORE_THAN_BILL);
-    }
-  }
 }

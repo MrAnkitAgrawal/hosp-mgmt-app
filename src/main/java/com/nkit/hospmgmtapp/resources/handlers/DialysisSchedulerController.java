@@ -21,6 +21,12 @@ public class DialysisSchedulerController {
   private final DialysisScheduleService dialysisScheduleService;
   private final BillingMgmtService billingMgmtService;
 
+  /**
+   * used to book dialysis
+   *
+   * @param dialysisScheduleRequestDto
+   * @return
+   */
   @PostMapping
   public ResponseEntity<DialysisScheduleResponseDto> scheduleDialysis(
       @RequestBody @Valid DialysisScheduleRequestDto dialysisScheduleRequestDto) {
@@ -28,6 +34,14 @@ public class DialysisSchedulerController {
         dialysisScheduleService.scheduleDialysis(dialysisScheduleRequestDto), CREATED);
   }
 
+  /**
+   * Used to fetch all scheduled dialysis between given date range
+   *
+   * @param dateFrom
+   * @param dateTo
+   * @param patientId
+   * @return
+   */
   @GetMapping
   public ResponseEntity<List<DialysisScheduleResponseDto>> getDialysisSchedules(
       @RequestParam(required = false) String dateFrom,
@@ -40,6 +54,16 @@ public class DialysisSchedulerController {
         dialysisScheduleService.getDialysisSchedules(dateFrom, dateTo, patientId), OK);
   }
 
+  /**
+   * Used to complete or cancel the dialysis. W
+   *
+   * <p>When completed then - it calculate all the bills and update bill status to DUE. - After that
+   * no changes in billing is possible
+   *
+   * @param dialysisScheduleId
+   * @param dialysisStatusUpdateRequestDto
+   * @return
+   */
   @PutMapping("/{dialysisScheduleId}/status")
   public ResponseEntity<String> updateDialysisStatus(
       @PathVariable Long dialysisScheduleId,
@@ -49,6 +73,13 @@ public class DialysisSchedulerController {
     return new ResponseEntity<>(NO_CONTENT);
   }
 
+  /**
+   * Used to add dialysis bills
+   *
+   * @param dialysisScheduleId
+   * @param billingDetails
+   * @return
+   */
   @PostMapping("/{dialysisScheduleId}/billing")
   public ResponseEntity<String> addUpdateBillForDialysis(
       @PathVariable long dialysisScheduleId, @RequestBody BillingDto billingDetails) {

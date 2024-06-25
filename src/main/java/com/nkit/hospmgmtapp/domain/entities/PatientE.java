@@ -70,6 +70,9 @@ public class PatientE implements Serializable {
   private List<BillingE> bills = new ArrayList<>();
 
   @OneToMany(mappedBy = "patientE", fetch = LAZY)
+  private List<PaymentE> payments = new ArrayList<>();
+
+  @OneToMany(mappedBy = "patientE", fetch = LAZY)
   private List<DialysisScheduleE> dialysisSchedules = new ArrayList<>();
 
   public PatientE(PatientDto patientDto) {

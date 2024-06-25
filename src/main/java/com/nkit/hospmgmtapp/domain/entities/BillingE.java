@@ -67,9 +67,6 @@ public class BillingE implements Serializable {
   @JoinColumn(referencedColumnName = "d_schedule_id", name = "d_schedule_id")
   private DialysisScheduleE dialysisScheduleE;
 
-  @OneToOne(mappedBy = "billReference")
-  private PaymentE payment;
-
   public BillingE(BillingDto billingDto) {
     this.billingHead = billingDto.getBillingHead();
     this.billingRemarks = billingDto.getBillingRemarks();
