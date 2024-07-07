@@ -1,18 +1,26 @@
 package com.nkit.hospmgmtapp.services;
 
-import static com.nkit.hospmgmtapp.domain.entities.BillStatus.PAID;
-import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.PATIENT_NOT_FOUND;
-import static java.util.stream.Collectors.toList;
-
+import com.nkit.hospmgmtapp.domain.entities.BillingE;
 import com.nkit.hospmgmtapp.domain.entities.PatientE;
 import com.nkit.hospmgmtapp.domain.entities.PaymentE;
+import com.nkit.hospmgmtapp.domain.repos.BillingR;
 import com.nkit.hospmgmtapp.domain.repos.InsuranceR;
 import com.nkit.hospmgmtapp.domain.repos.PatientR;
 import com.nkit.hospmgmtapp.domain.repos.PaymentR;
-import com.nkit.hospmgmtapp.resources.models.*;
-import java.util.List;
+import com.nkit.hospmgmtapp.resources.models.BillingDetailsDto;
+import com.nkit.hospmgmtapp.resources.models.PatientDetailsDto;
+import com.nkit.hospmgmtapp.resources.models.PatientDto;
+import com.nkit.hospmgmtapp.resources.models.PaymentDto;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static com.nkit.hospmgmtapp.domain.entities.BillStatus.*;
+import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.*;
+import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +28,7 @@ public class PatientService {
   private final PatientR patientR;
   private final InsuranceR insuranceR;
   private final PaymentR paymentR;
+  private final BillingR billingR;
 
   public Long createPatient(PatientDto patientDto) {
     PatientE patientE = new PatientE(patientDto);
@@ -71,7 +80,7 @@ public class PatientService {
     // calculate total balance to be paid
     float totalBalance =
         patientE.getBills().stream()
-            .filter(billingE -> billingE.getBillStatus() != PAID && billingE.getTotalBill() != null)
+                .filter(billingE -> billingE.getBillStatus() != PAID)
             .map(billingE -> billingE.getTotalBill())
             .filter(itemAmount -> itemAmount != null)
             .reduce(Float::sum)
@@ -87,6 +96,7 @@ public class PatientService {
     return patientDetailsDto;
   }
 
+  @Transactional
   public void addPatientPaymentDetails(Long patientId, PaymentDto paymentDto) {
     PatientE patientE = getPatientE(patientId);
     List<PaymentE> existingPayments = patientE.getPayments();
@@ -97,15 +107,48 @@ public class PatientService {
     newPayment.setPatientE(patientE);
     existingPayments.add(newPayment);
 
-    patientR.save(patientE);
     paymentR.save(newPayment);
+    patientR.save(patientE);
 
-    // TODO add logic to settle pending bills based on payment amount
+    List<BillingE> billsToBeProcessed = paymentDto.getBillingDetails().stream().map(billingDto -> getBillingE(billingDto.getBillingId())).collect(toList());
+
+    // check all due bills and settle one by one as per paid amount
+    AtomicReference<Float> paidAmount = new AtomicReference<>(newPayment.getAmount());
+
+    billsToBeProcessed.forEach(bill -> {
+      if (bill.getBillStatus() != DUE && bill.getBillStatus() != PARTIALLY_PAID) {
+        throw new RuntimeException(BILL_NOT_READY_OR_ALREADY_PAID);
+      }
+
+      float dueAmount = bill.getTotalBill() - bill.getPaidAmount();
+
+      if (dueAmount > 0 && dueAmount <= paidAmount.get()) {
+        bill.setBillStatus(PAID);
+        bill.setPaidAmount(bill.getPaidAmount() + dueAmount);
+        paidAmount.set(paidAmount.get() - dueAmount);
+      } else if (paidAmount.get() > 0 && dueAmount > paidAmount.get()) {
+        bill.setBillStatus(PARTIALLY_PAID);
+        bill.setPaidAmount(bill.getPaidAmount() + paidAmount.get());
+        paidAmount.set(0f);
+      }
+
+      bill.getBillPayments().add(newPayment);
+      newPayment.getBillings().add(bill);
+
+      billingR.save(bill);
+      paymentR.save(newPayment);
+    });
+
+    if (paidAmount.get() > 0) {
+      throw new RuntimeException(PAID_AMOUNT_IS_MORE_THAN_PENDING_BILLS);
+    }
   }
 
   private PatientE getPatientE(Long patientId) {
     return patientR.findById(patientId).orElseThrow(() -> new RuntimeException(PATIENT_NOT_FOUND));
   }
 
-
+  private BillingE getBillingE(Long billingId) {
+    return billingR.findById(billingId).orElseThrow(() -> new RuntimeException(BILL_NOT_FOUND));
+  }
 }

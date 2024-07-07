@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 @ToString
@@ -26,6 +29,9 @@ public class PaymentDto {
 
   @JsonProperty("paymentRemarks")
   private String paymentRemarks;
+
+  @JsonProperty("billingDetails")
+  private List<BillingDetailsDto> billingDetails = new ArrayList<>();
 
   public PaymentDto(PaymentE paymentE) {
     this.paymentId = paymentE.getPaymentId();

@@ -1,25 +1,28 @@
 package com.nkit.hospmgmtapp.domain.entities;
 
-import static jakarta.persistence.EnumType.STRING;
-import static org.apache.commons.lang3.EnumUtils.getEnumIgnoreCase;
-
 import com.nkit.hospmgmtapp.resources.models.PaymentDto;
 import com.nkit.hospmgmtapp.resources.models.PaymentType;
 import jakarta.persistence.*;
-import java.io.Serial;
-import java.io.Serializable;
-import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.io.Serial;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import static jakarta.persistence.EnumType.STRING;
+import static org.apache.commons.lang3.EnumUtils.getEnumIgnoreCase;
+
 @Entity
 @Table(name = "PAYMENT")
 @Getter
 @Setter
-@ToString
+@ToString(exclude = {"billings", "patientE"})
 @NoArgsConstructor
 public class PaymentE implements Serializable {
   @Serial private static final long serialVersionUID = -2335790453176498830L;
@@ -50,6 +53,9 @@ public class PaymentE implements Serializable {
 
   @Column(name = "payment_remark")
   private String paymentRemarks;
+
+  @ManyToMany(mappedBy = "billPayments")
+  private List<BillingE> billings = new ArrayList<>();
 
   @ManyToOne
   @JoinColumn(

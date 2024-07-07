@@ -1,27 +1,28 @@
 package com.nkit.hospmgmtapp.domain.entities;
 
-import static jakarta.persistence.EnumType.STRING;
-import static jakarta.persistence.FetchType.LAZY;
-import static java.util.stream.Collectors.toList;
-
 import com.nkit.hospmgmtapp.resources.models.BillingDto;
 import jakarta.persistence.*;
-import java.io.Serial;
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.io.Serial;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import static jakarta.persistence.EnumType.STRING;
+import static jakarta.persistence.FetchType.LAZY;
+import static java.util.stream.Collectors.toList;
+
 @Entity
 @Table(name = "Billing")
 @Getter
 @Setter
-@ToString(exclude = {"billItems", "patientE", "dialysisScheduleE", "payment"})
+@ToString(exclude = {"billItems", "billPayments", "patientE", "dialysisScheduleE"})
 @NoArgsConstructor
 public class BillingE implements Serializable {
   @Serial private static final long serialVersionUID = 7316969804553613076L;
@@ -50,10 +51,21 @@ public class BillingE implements Serializable {
   private BillStatus billStatus;
 
   @Column(name = "total_bill")
-  private Float totalBill;
+  private float totalBill;
+
+  @Column(name = "paid_amount")
+  private float paidAmount;
 
   @OneToMany(mappedBy = "billing", fetch = LAZY)
   private List<BillItemE> billItems = new ArrayList<>();
+
+  @ManyToMany
+  @JoinTable(
+          name = "billing_payment",
+          joinColumns = @JoinColumn(name = "billing_id"),
+          inverseJoinColumns = @JoinColumn(name = "payment_id")
+  )
+  private List<PaymentE> billPayments = new ArrayList<>();
 
   @ManyToOne
   @JoinColumn(

@@ -1,24 +1,25 @@
 package com.nkit.hospmgmtapp.domain.entities;
 
-import static jakarta.persistence.EnumType.STRING;
-import static jakarta.persistence.FetchType.LAZY;
-
 import jakarta.persistence.*;
-import java.io.Serial;
-import java.io.Serializable;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.io.Serial;
+import java.io.Serializable;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import static jakarta.persistence.EnumType.STRING;
+import static jakarta.persistence.FetchType.LAZY;
+
 @Entity
 @Table(name = "DIALYSIS_STATION")
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "dialysisSchedules")
 @NoArgsConstructor
 public class DialysisStationE implements Serializable {
   @Serial private static final long serialVersionUID = 853232371219102215L;

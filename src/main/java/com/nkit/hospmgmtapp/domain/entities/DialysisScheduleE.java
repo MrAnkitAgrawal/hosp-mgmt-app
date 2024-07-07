@@ -1,10 +1,6 @@
 package com.nkit.hospmgmtapp.domain.entities;
 
 import jakarta.persistence.*;
-import java.io.Serial;
-import java.io.Serializable;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,11 +8,16 @@ import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.io.Serial;
+import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "DIALYSIS_SCHEDULE")
 @Getter
 @Setter
-@ToString
+@ToString(exclude = {"dialysisStationE", "dialysisSlotE", "patientE", "billingE"})
 @NoArgsConstructor
 public class DialysisScheduleE implements Serializable {
   @Serial private static final long serialVersionUID = 2514648103782028333L;

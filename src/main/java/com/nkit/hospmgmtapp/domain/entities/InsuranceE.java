@@ -2,18 +2,19 @@ package com.nkit.hospmgmtapp.domain.entities;
 
 import com.nkit.hospmgmtapp.resources.models.InsuranceDto;
 import jakarta.persistence.*;
-import java.io.Serial;
-import java.io.Serializable;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.io.Serial;
+import java.io.Serializable;
+
 @Entity
 @Table(name = "INSURANCE")
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "patientE")
 @NoArgsConstructor
 public class InsuranceE implements Serializable {
   @Serial private static final long serialVersionUID = -7208073958703806319L;

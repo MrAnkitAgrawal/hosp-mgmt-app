@@ -1,27 +1,28 @@
 package com.nkit.hospmgmtapp.domain.entities;
 
-import static com.nkit.hospmgmtapp.utils.HospMgmtUtils.parseStringToDate;
-import static jakarta.persistence.FetchType.LAZY;
-import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang3.EnumUtils.getEnumIgnoreCase;
-
 import com.nkit.hospmgmtapp.resources.models.PatientDto;
 import jakarta.persistence.*;
-import java.io.Serial;
-import java.io.Serializable;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.io.Serial;
+import java.io.Serializable;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.nkit.hospmgmtapp.utils.HospMgmtUtils.parseStringToDate;
+import static jakarta.persistence.FetchType.LAZY;
+import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.EnumUtils.getEnumIgnoreCase;
+
 @Entity
 @Table(name = "PATIENT")
 @Getter
 @Setter
-@ToString
+@ToString(exclude = {"insurances", "bills", "payments", "dialysisSchedules"})
 @NoArgsConstructor
 public class PatientE implements Serializable {
   @Serial private static final long serialVersionUID = 2270050187803228595L;
