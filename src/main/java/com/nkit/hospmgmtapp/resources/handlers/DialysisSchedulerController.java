@@ -5,7 +5,6 @@ import static org.springframework.http.HttpStatus.*;
 import com.nkit.hospmgmtapp.resources.models.*;
 import com.nkit.hospmgmtapp.services.BillingMgmtService;
 import com.nkit.hospmgmtapp.services.DialysisScheduleService;
-import com.nkit.hospmgmtapp.validators.annotations.ValidDate;
 import jakarta.validation.Valid;
 
 import java.util.List;

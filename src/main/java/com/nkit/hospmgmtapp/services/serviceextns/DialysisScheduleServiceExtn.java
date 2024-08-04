@@ -4,20 +4,23 @@ import static com.nkit.hospmgmtapp.domain.entities.DialysisStationStatus.ACTIVE;
 import static com.nkit.hospmgmtapp.domain.entities.ScheduleStatus.*;
 import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.*;
 import static java.time.LocalDate.now;
+import static java.time.LocalTime.MIDNIGHT;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.EnumUtils.getEnumIgnoreCase;
 
 import com.nkit.hospmgmtapp.domain.entities.*;
 import com.nkit.hospmgmtapp.domain.repos.DialysisScheduleR;
 import com.nkit.hospmgmtapp.domain.repos.DialysisSlotR;
 import com.nkit.hospmgmtapp.domain.repos.DialysisStationR;
+import com.nkit.hospmgmtapp.domain.repos.wrapper.RepositoryWrapper;
 import com.nkit.hospmgmtapp.resources.models.DialysisStatusUpdateRequestDto;
+import com.nkit.hospmgmtapp.services.BillingMgmtService;
 import com.nkit.hospmgmtapp.services.models.Schedule;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.EnumUtils;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -28,6 +31,8 @@ public class DialysisScheduleServiceExtn {
   private final DialysisStationR dialysisStationR;
   private final DialysisSlotR dialysisSlotR;
   private final DialysisScheduleR dialysisScheduleR;
+  private final BillingMgmtService billingMgmtService;
+  private final RepositoryWrapper repositoryWrapper;
 
   public DialysisScheduleE bookDialysisSchedule(
       PatientE patientE,
@@ -59,22 +64,6 @@ public class DialysisScheduleServiceExtn {
     }
   }
 
-  private DialysisScheduleE createAndSaveSchedule(
-      PatientE patientE, LocalDate scheduleDate, Schedule scheduleToBeBooked) {
-    DialysisScheduleE dialysisScheduleE = new DialysisScheduleE();
-    dialysisScheduleE.setScheduleDate(scheduleDate);
-    dialysisScheduleE.setStatus(SCHEDULED);
-    dialysisScheduleE.setDialysisStationE(
-        dialysisStationR.findByStationLabel(scheduleToBeBooked.getDStationLabel()).get());
-    dialysisScheduleE.setDialysisSlotE(
-        dialysisSlotR.findByName(scheduleToBeBooked.getDSlotName()).get());
-    dialysisScheduleE.setPatientE(patientE);
-
-    dialysisScheduleR.save(dialysisScheduleE);
-
-    return dialysisScheduleE;
-  }
-
   /**
    * Return possible and valid schedules as per date for booking
    *
@@ -95,7 +84,7 @@ public class DialysisScheduleServiceExtn {
                           .findByName(schedule.getDSlotName())
                           .get()
                           .getEndTime()
-                          .isAfter(LocalTime.now().plusHours(DELAY_ACCEPTED_IN_HRS));
+                          .isAfter(LocalTime.now().isAfter(MIDNIGHT.minusHours(DELAY_ACCEPTED_IN_HRS)) ? MIDNIGHT.minusSeconds(1) : LocalTime.now().plusHours(DELAY_ACCEPTED_IN_HRS));
                     })
                 .collect(toList())
             : possibleDialysisSchedulesForDate();
@@ -107,16 +96,6 @@ public class DialysisScheduleServiceExtn {
         .collect(toList());
   }
 
-  private boolean isScheduleAlreadyBooked(
-      Schedule schedule, List<DialysisScheduleE> filledSchedules) {
-    return filledSchedules.stream()
-        .anyMatch(
-            s ->
-                s.getDialysisStationE().getStationLabel().equals(schedule.getDStationLabel())
-                    && s.getDialysisSlotE().getName() == schedule.getDSlotName()
-                    && (s.getStatus() == SCHEDULED || s.getStatus() == COMPLETED));
-  }
-
   /**
    * Return all schedules possible for one day. out of these schedules few might already be booked
    * or gone.
@@ -124,15 +103,10 @@ public class DialysisScheduleServiceExtn {
    * @return List<Schedule>
    */
   public List<Schedule> possibleDialysisSchedulesForDate() {
-    return dialysisStationR.findByDialysisStationStatus(ACTIVE).stream()
-        .map(
-            station -> {
-              return dialysisSlotR.findAll().stream()
-                  .map(slot -> new Schedule(station.getStationLabel(), slot.getName(), AVAILABLE))
-                  .collect(toList());
-            })
-        .flatMap(List::stream)
-        .collect(toList());
+    return dialysisSlotR.findAll().stream().map(slot -> {
+              return dialysisStationR.findByDialysisStationStatus(ACTIVE).stream().map(station -> new Schedule(station.getStationLabel(), slot.getName(), AVAILABLE)).collect(toList());
+            }).flatMap(List::stream)
+            .collect(toList());
   }
 
   /**
@@ -144,6 +118,32 @@ public class DialysisScheduleServiceExtn {
    */
   public List<DialysisScheduleE> filledDialysisSchedulesForDate(LocalDate date) {
     return dialysisScheduleR.findByScheduleDate(date);
+  }
+
+  private boolean isScheduleAlreadyBooked(
+          Schedule schedule, List<DialysisScheduleE> filledSchedules) {
+    return filledSchedules.stream()
+            .anyMatch(
+                    s ->
+                            s.getDialysisStationE().getStationLabel().equals(schedule.getDStationLabel())
+                                    && s.getDialysisSlotE().getName() == schedule.getDSlotName()
+                                    && (s.getStatus() == SCHEDULED || s.getStatus() == COMPLETED));
+  }
+
+  private DialysisScheduleE createAndSaveSchedule(
+          PatientE patientE, LocalDate scheduleDate, Schedule scheduleToBeBooked) {
+    DialysisScheduleE dialysisScheduleE = new DialysisScheduleE();
+    dialysisScheduleE.setScheduleDate(scheduleDate);
+    dialysisScheduleE.setStatus(SCHEDULED);
+    dialysisScheduleE.setDialysisStationE(
+            dialysisStationR.findByStationLabel(scheduleToBeBooked.getDStationLabel()).get());
+    dialysisScheduleE.setDialysisSlotE(
+            dialysisSlotR.findByName(scheduleToBeBooked.getDSlotName()).get());
+    dialysisScheduleE.setPatientE(patientE);
+
+    dialysisScheduleR.save(dialysisScheduleE);
+
+    return dialysisScheduleE;
   }
 
   /**
@@ -158,14 +158,28 @@ public class DialysisScheduleServiceExtn {
    */
   public DialysisScheduleE updateDialysisStatus(
       Long dialysisScheduleId, DialysisStatusUpdateRequestDto dialysisStatusUpdateRequestDto) {
-    DialysisScheduleE scheduleE = getScheduleEntity(dialysisScheduleId);
+    DialysisScheduleE scheduleE = repositoryWrapper.getScheduleEntity(dialysisScheduleId);
+
+    if (scheduleE.getStatus() == CANCELLED || scheduleE.getStatus() == COMPLETED) {
+      throw new RuntimeException(DIALYSIS_IS_ALREADY_CANCELLED_OR_COMPLETED);
+    }
 
     ScheduleStatus dialysisStatus =
-        EnumUtils.getEnumIgnoreCase(
+        getEnumIgnoreCase(
             ScheduleStatus.class, dialysisStatusUpdateRequestDto.getStatus());
     if (dialysisStatus == COMPLETED) {
+      // Set Dr & staff details
       scheduleE.setDoctorName(dialysisStatusUpdateRequestDto.getDoctorName());
       scheduleE.setNursingStaff(dialysisStatusUpdateRequestDto.getNursingStaff());
+
+      // Bills must already be added for the dialysis.
+      // calculate total bills and update billing status to DUE
+      if (scheduleE.getBillingE() == null
+              || scheduleE.getBillingE().getBillItems() == null
+              || scheduleE.getBillingE().getBillItems().isEmpty()) {
+        throw new RuntimeException(DIALYSIS_BILLING_IS_NOT_AVAILABLE);
+      }
+      billingMgmtService.calculateTotalBillAndSetStatusAsDue(scheduleE.getBillingE());
     }
     scheduleE.setStatus(dialysisStatus);
 
@@ -184,18 +198,5 @@ public class DialysisScheduleServiceExtn {
     } while (!temp.isAfter(dateTo));
 
     return dialysisSchedules;
-  }
-
-  /**
-   * Check and return dialysis schedule by id from DB. Throw DIALYSIS_SCHEDULE_NOT_FOUND exception
-   * if not found.
-   *
-   * @param dialysisScheduleId
-   * @return DialysisScheduleE
-   */
-  public DialysisScheduleE getScheduleEntity(Long dialysisScheduleId) {
-    return dialysisScheduleR
-        .findById(dialysisScheduleId)
-        .orElseThrow(() -> new RuntimeException(DIALYSIS_SCHEDULE_NOT_FOUND));
   }
 }
