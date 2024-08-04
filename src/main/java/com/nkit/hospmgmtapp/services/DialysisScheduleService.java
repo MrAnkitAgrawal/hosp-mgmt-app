@@ -1,6 +1,5 @@
 package com.nkit.hospmgmtapp.services;
 
-import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.DIALYSIS_BILLING_IS_NOT_AVAILABLE;
 import static com.nkit.hospmgmtapp.utils.HospMgmtUtils.parseStringToDate;
 import static java.time.LocalDate.now;
 import static java.util.stream.Collectors.toList;
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Component;
 public class DialysisScheduleService {
   private final DialysisScheduleServiceExtn dialysisScheduleServiceExtn;
   private final DialysisServiceValidator dialysisServiceValidator;
-  private final BillingMgmtService billingMgmtService;
 
   public DialysisScheduleResponseDto scheduleDialysis(
       DialysisScheduleRequestDto dialysisScheduleRequestDto) {
@@ -52,30 +50,6 @@ public class DialysisScheduleService {
     return new DialysisScheduleResponseDto(scheduleE);
   }
 
-  @Transactional
-  public void updateDialysisStatus(
-      Long dialysisScheduleId, DialysisStatusUpdateRequestDto dialysisStatusUpdateRequestDto) {
-    DialysisScheduleE currentScheduleE =
-        dialysisScheduleServiceExtn.updateDialysisStatus(
-            dialysisScheduleId, dialysisStatusUpdateRequestDto);
-
-    // Calculate total bills and update billing status to DUE
-    if (currentScheduleE.getBillingE() == null
-        || currentScheduleE.getBillingE().getBillItems() == null
-        || currentScheduleE.getBillingE().getBillItems().isEmpty()) {
-      throw new RuntimeException(DIALYSIS_BILLING_IS_NOT_AVAILABLE);
-    }
-    billingMgmtService.calculateTotalBillAndSetStatusAsDue(currentScheduleE.getBillingE());
-
-    // check and book next dialysis schedule
-    DialysisScheduleRequestDto nextDialysisDetails =
-        dialysisStatusUpdateRequestDto.getNextDialysisDetails();
-    if (nextDialysisDetails != null) {
-      nextDialysisDetails.setPatientId(currentScheduleE.getPatientE().getPatientId());
-      scheduleDialysis(nextDialysisDetails);
-    }
-  }
-
   public List<DialysisScheduleResponseDto> getDialysisSchedules(
       String dateFromStr, String dateToStr, Long patientId) {
     LocalDate dateFrom = isBlank(dateFromStr) ? now() : parseStringToDate(dateFromStr);
@@ -84,5 +58,21 @@ public class DialysisScheduleService {
     List<DialysisScheduleE> schedules =
         dialysisScheduleServiceExtn.getDialysisSchedules(dateFrom, dateTo, patientId);
     return schedules.stream().map(DialysisScheduleResponseDto::new).collect(toList());
+  }
+
+  @Transactional
+  public void updateDialysisStatus(
+      Long dialysisScheduleId, DialysisStatusUpdateRequestDto dialysisStatusUpdateRequestDto) {
+    DialysisScheduleE currentScheduleE =
+        dialysisScheduleServiceExtn.updateDialysisStatus(
+            dialysisScheduleId, dialysisStatusUpdateRequestDto);
+
+    // check and book next dialysis schedule
+    DialysisScheduleRequestDto nextDialysisDetails =
+        dialysisStatusUpdateRequestDto.getNextDialysisDetails();
+    if (nextDialysisDetails != null) {
+      nextDialysisDetails.setPatientId(currentScheduleE.getPatientE().getPatientId());
+      scheduleDialysis(nextDialysisDetails);
+    }
   }
 }

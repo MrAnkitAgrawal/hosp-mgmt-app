@@ -20,9 +20,6 @@ public class PatientDetailsDto extends PatientDto {
   @JsonProperty("billingDetails")
   private List<BillingDetailsDto> billingDetails = new ArrayList<>();
 
-  @JsonProperty("paymentDetails")
-  private List<PaymentDto> paymentDetails = new ArrayList<>();
-
   public PatientDetailsDto(PatientE patientE) {
     super(patientE);
   }

@@ -10,6 +10,7 @@ import com.nkit.hospmgmtapp.domain.entities.BillingE;
 import com.nkit.hospmgmtapp.domain.entities.DialysisScheduleE;
 import com.nkit.hospmgmtapp.domain.repos.BillItemR;
 import com.nkit.hospmgmtapp.domain.repos.BillingR;
+import com.nkit.hospmgmtapp.domain.repos.wrapper.RepositoryWrapper;
 import com.nkit.hospmgmtapp.resources.models.BillingDto;
 import com.nkit.hospmgmtapp.services.serviceextns.DialysisScheduleServiceExtn;
 import jakarta.transaction.Transactional;
@@ -21,23 +22,13 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class BillingMgmtService {
-  private final DialysisScheduleServiceExtn dialysisScheduleServiceExtn;
+  private final RepositoryWrapper repositoryWrapper;
   private final BillingR billingR;
   private final BillItemR billItemR;
 
-  public void saveBilling(BillingE billingE) {
-    if (billingE.getBillItems() == null || billingE.getBillItems().isEmpty()) {
-      throw new RuntimeException(BILL_ITEMS_NOT_PROVIDED);
-    }
-
-    billingE.getBillItems().forEach(billItemE -> billItemE.setBilling(billingE));
-    billingR.save(billingE);
-    billItemR.saveAll(billingE.getBillItems());
-  }
-
   @Transactional
   public void addOrUpdateBilling(long dialysisId, BillingDto billingDetails) {
-    DialysisScheduleE dialysisScheduleE = dialysisScheduleServiceExtn.getScheduleEntity(dialysisId);
+    DialysisScheduleE dialysisScheduleE = repositoryWrapper.getScheduleEntity(dialysisId);
     BillingE existingBillingE = dialysisScheduleE.getBillingE();
 
     if (existingBillingE != null) {
@@ -60,14 +51,6 @@ public class BillingMgmtService {
 
       saveNewBillingDetails(requestedBillingE);
     }
-  }
-
-  public BillingDto getDialysisBillingDetails(long dialysisScheduleId) {
-    DialysisScheduleE scheduleE = dialysisScheduleServiceExtn.getScheduleEntity(dialysisScheduleId);
-    if (scheduleE.getBillingE() == null) {
-      throw new RuntimeException(DIALYSIS_BILLING_IS_NOT_AVAILABLE);
-    }
-    return new BillingDto(scheduleE.getBillingE());
   }
 
   /**
@@ -118,8 +101,28 @@ public class BillingMgmtService {
     billItemR.saveAll(billingE.getBillItems());
   }
 
+  /**
+   * return billing details of particular schedule
+   *
+   * @param dialysisScheduleId
+   * @return
+   */
+  public BillingDto getDialysisBillingDetails(long dialysisScheduleId) {
+    DialysisScheduleE scheduleE = repositoryWrapper.getScheduleEntity(dialysisScheduleId);
+    if (scheduleE.getBillingE() == null) {
+      throw new RuntimeException(DIALYSIS_BILLING_IS_NOT_AVAILABLE);
+    }
+    return new BillingDto(scheduleE.getBillingE());
+  }
+
+  /**
+   * Calculate bill from all bill items and set total due bills and update status to DUE
+   *
+   * @param billingE
+   */
   public void calculateTotalBillAndSetStatusAsDue(BillingE billingE) {
     calculateTotalBill(billingE);
+    billingE.setPaidAmount(0f);
     billingE.setBillStatus(DUE);
     billingR.save(billingE);
   }

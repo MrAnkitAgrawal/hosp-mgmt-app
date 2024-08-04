@@ -1,5 +1,9 @@
 package com.nkit.hospmgmtapp.services;
 
+import static com.nkit.hospmgmtapp.domain.entities.BillStatus.*;
+import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.*;
+import static java.util.stream.Collectors.toList;
+
 import com.nkit.hospmgmtapp.domain.entities.BillingE;
 import com.nkit.hospmgmtapp.domain.entities.PatientE;
 import com.nkit.hospmgmtapp.domain.entities.PaymentE;
@@ -12,15 +16,11 @@ import com.nkit.hospmgmtapp.resources.models.PatientDetailsDto;
 import com.nkit.hospmgmtapp.resources.models.PatientDto;
 import com.nkit.hospmgmtapp.resources.models.PaymentDto;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static com.nkit.hospmgmtapp.domain.entities.BillStatus.*;
-import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.*;
-import static java.util.stream.Collectors.toList;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -66,32 +66,30 @@ public class PatientService {
     patientR.delete(patientE);
   }
 
-  public PatientDto retrievePatientDetailsById(Long patientId) {
+  public PatientDto retrievePatientBillingDetailsById(Long patientId) {
     PatientE patientE = getPatientE(patientId);
     PatientDetailsDto patientDetailsDto = new PatientDetailsDto(patientE);
 
-    // retrieving all uncleared bills
-    List<BillingDetailsDto> pendingBills =
-        patientE.getBills().stream()
-            .filter(bill -> bill.getBillStatus() != PAID)
+    // retrieving last 5 bills
+    List<BillingDetailsDto> recentBills =
+        billingR.findFiveByPatientEPatientIdOrderByBillingIdDesc(patientE.getPatientId()).stream()
             .map(BillingDetailsDto::new)
             .collect(toList());
+    patientDetailsDto.setBillingDetails(recentBills);
 
-    // calculate total balance to be paid
-    float totalBalance =
-        patientE.getBills().stream()
-                .filter(billingE -> billingE.getBillStatus() != PAID)
-            .map(billingE -> billingE.getTotalBill())
-            .filter(itemAmount -> itemAmount != null)
-            .reduce(Float::sum)
-            .get();
-
-    // Set billing details
-    patientDetailsDto.setBillingDetails(pendingBills);
-    patientDetailsDto.setTotalBalance(totalBalance);
-
-    // Set payment details
-    patientDetailsDto.setPaymentDetails(patientE.getPayments().stream().map(PaymentDto::new).collect(toList()));
+    // calculate total pending bills for the patient
+    List<BillingE> pendingBills =
+        billingR.findByBillStatusInAndPatientEPatientId(
+            Arrays.asList(DUE, PARTIALLY_PAID), patientE.getPatientId());
+    float pendingBillsAmount = 0;
+    if (pendingBills != null && !pendingBills.isEmpty()) {
+      pendingBillsAmount =
+          pendingBills.stream()
+              .map(billingE -> billingE.getTotalBill() - billingE.getPaidAmount())
+              .reduce(Float::sum)
+              .get();
+    }
+    patientDetailsDto.setTotalBalance(pendingBillsAmount);
 
     return patientDetailsDto;
   }

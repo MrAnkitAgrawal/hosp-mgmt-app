@@ -32,7 +32,7 @@ public class PatientController {
   }
 
   @GetMapping
-  public ResponseEntity<List<PatientDto>> retrievePatient() {
+  public ResponseEntity<List<PatientDto>> retrieveAllPatients() {
     return new ResponseEntity<>(patientService.retrieveAllPatient(), OK);
   }
 
@@ -51,7 +51,7 @@ public class PatientController {
 
   @GetMapping("/{patientId}/billing")
   public ResponseEntity<PatientDto> retrievePatientBillingDetails(@PathVariable Long patientId) {
-    return new ResponseEntity<>(patientService.retrievePatientDetailsById(patientId), OK);
+    return new ResponseEntity<>(patientService.retrievePatientBillingDetailsById(patientId), OK);
   }
 
   @PostMapping("/{patientId}/payment")

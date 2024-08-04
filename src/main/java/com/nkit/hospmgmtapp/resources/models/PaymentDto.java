@@ -2,13 +2,12 @@ package com.nkit.hospmgmtapp.resources.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.nkit.hospmgmtapp.domain.entities.PaymentE;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Setter

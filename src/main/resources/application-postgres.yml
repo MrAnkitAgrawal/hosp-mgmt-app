@@ -2,17 +2,18 @@ spring:
   application:
     name: Hospital Management Application
   datasource:
-    url: jdbc:h2:mem:testdb
-    driverClassName: org.h2.Driver
-    username: sa
-    password: sa
+    url: jdbc:postgresql://localhost:5432/nbhdb
+    driverClassName: org.postgresql.Driver
+    username: nbhdbadmin
+    password: nbhdbadmin
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-  h2.console.enabled: true
 
 server:
   port: 8080

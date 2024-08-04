@@ -23,7 +23,10 @@ public class BillingDto {
   private String billingRemarks;
 
   @JsonProperty("totalBillAmount")
-  private Float totalBillAmount;
+  private float totalBillAmount;
+
+  @JsonProperty("paidAmount")
+  private float paidAmount;
 
   @JsonProperty("billItems")
   private List<BillItemDto> billItems = new ArrayList<>();
@@ -32,6 +35,7 @@ public class BillingDto {
     this.billingHead = billingE.getBillingHead();
     this.billingRemarks = billingE.getBillingRemarks();
     this.totalBillAmount = billingE.getTotalBill();
+    this.paidAmount = billingE.getPaidAmount();
     billItems.addAll(billingE.getBillItems().stream().map(BillItemDto::new).collect(toList()));
   }
 }

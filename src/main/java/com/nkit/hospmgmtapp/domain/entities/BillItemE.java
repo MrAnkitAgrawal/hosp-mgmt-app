@@ -34,7 +34,7 @@ public class BillItemE implements Serializable {
   private Integer itemQuantity;
 
   @Column(name = "amount", nullable = false)
-  private Float amount;
+  private float amount;
 
   @ManyToOne
   @JoinColumn(
