@@ -5,7 +5,7 @@ import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.nkit.hospmgmtapp.domain.entities.DialysisSlot;
 import com.nkit.hospmgmtapp.domain.entities.DialysisStationLabel;
-import com.nkit.hospmgmtapp.validators.annotations.InvalidEnum;
+import com.nkit.hospmgmtapp.validators.annotations.ValidEnum;
 import com.nkit.hospmgmtapp.validators.annotations.NotPastDate;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -20,7 +20,7 @@ public class DialysisScheduleRequestDto {
   @JsonProperty("patientId")
   private Long patientId;
 
-  // must be valid, future date. In dd-mmm-yyyy format
+  // must be valid, current or future date. In dd-mm-yyyy format
   @NotBlank(message = DIALYSIS_SCHEDULE_DATE_NOT_PROVIDED)
   @NotPastDate(message = DIALYSIS_SCHEDULE_DATE_INVALID)
   @JsonProperty("dialysisDate")
@@ -28,14 +28,14 @@ public class DialysisScheduleRequestDto {
 
   // if provided then schedule on this station
   @JsonProperty("dialysisStationLabel")
-  @InvalidEnum(
+  @ValidEnum(
       targetClassType = DialysisStationLabel.class,
       message = DIALYSIS_STATION_LABEL_INVALID)
   private String dialysisStationLabel;
 
   // if provided then schedule as per slot
   @JsonProperty("dialysisSlot")
-  @InvalidEnum(targetClassType = DialysisSlot.class, message = DIALYSIS_SLOT_INVALID)
+  @ValidEnum(targetClassType = DialysisSlot.class, message = DIALYSIS_SLOT_INVALID)
   private String dialysisSlot;
 
   @JsonProperty("scheduleRandomlyIfMentionedStationAndSlotNotAvailable")

@@ -1,5 +1,7 @@
 package com.nkit.hospmgmtapp.services;
 
+import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.DATE_OF_DIALYSIS_SCHEDULES_DATE_RANGE_IS_INVALID;
+import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.DIALYSIS_SCHEDULES_DATE_RANGE_IS_INVALID;
 import static com.nkit.hospmgmtapp.utils.HospMgmtUtils.parseStringToDate;
 import static java.time.LocalDate.now;
 import static java.util.stream.Collectors.toList;
@@ -11,7 +13,10 @@ import com.nkit.hospmgmtapp.services.serviceextns.DialysisScheduleServiceExtn;
 import com.nkit.hospmgmtapp.services.validator.DialysisServiceValidator;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -52,12 +57,20 @@ public class DialysisScheduleService {
 
   public List<DialysisScheduleResponseDto> getDialysisSchedules(
       String dateFromStr, String dateToStr, Long patientId) {
-    LocalDate dateFrom = isBlank(dateFromStr) ? now() : parseStringToDate(dateFromStr);
-    LocalDate dateTo = isBlank(dateToStr) ? now() : parseStringToDate(dateToStr);
+    try {
+      LocalDate dateFrom = isBlank(dateFromStr) ? now() : parseStringToDate(dateFromStr);
+      LocalDate dateTo = isBlank(dateToStr) ? now() : parseStringToDate(dateToStr);
 
-    List<DialysisScheduleE> schedules =
-        dialysisScheduleServiceExtn.getDialysisSchedules(dateFrom, dateTo, patientId);
-    return schedules.stream().map(DialysisScheduleResponseDto::new).collect(toList());
+      if (dateFrom.isAfter(dateTo)) {
+        throw new RuntimeException(DIALYSIS_SCHEDULES_DATE_RANGE_IS_INVALID);
+      }
+
+      List<DialysisScheduleE> schedules =
+          dialysisScheduleServiceExtn.getDialysisSchedules(dateFrom, dateTo, patientId);
+      return schedules.stream().map(DialysisScheduleResponseDto::new).collect(toList());
+    } catch (DateTimeParseException ex) {
+      throw new RuntimeException(DATE_OF_DIALYSIS_SCHEDULES_DATE_RANGE_IS_INVALID);
+    }
   }
 
   @Transactional

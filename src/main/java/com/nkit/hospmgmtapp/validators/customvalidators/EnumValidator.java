@@ -1,7 +1,6 @@
 package com.nkit.hospmgmtapp.validators.customvalidators;
 
-import com.nkit.hospmgmtapp.validators.annotations.InvalidEnum;
-import com.nkit.hospmgmtapp.validators.annotations.ValidDialysisClosureStatus;
+import com.nkit.hospmgmtapp.validators.annotations.ValidEnum;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
@@ -10,11 +9,11 @@ import java.util.Set;
 
 import static java.util.stream.Collectors.toSet;
 
-public class EnumValidator implements ConstraintValidator<InvalidEnum, String> {
+public class EnumValidator implements ConstraintValidator<ValidEnum, String> {
   private Set<String> validEnumList;
 
   @Override
-  public void initialize(InvalidEnum targetEnum) {
+  public void initialize(ValidEnum targetEnum) {
     Class<? extends Enum> enumSelected = targetEnum.targetClassType();
     validEnumList =
         (Set<String>)

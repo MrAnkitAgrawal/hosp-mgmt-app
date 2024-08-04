@@ -2,13 +2,12 @@ package com.nkit.hospmgmtapp.resources.handlers;
 
 import static org.springframework.http.HttpStatus.*;
 
-import com.nkit.hospmgmtapp.resources.models.BillingDto;
-import com.nkit.hospmgmtapp.resources.models.DialysisScheduleRequestDto;
-import com.nkit.hospmgmtapp.resources.models.DialysisScheduleResponseDto;
-import com.nkit.hospmgmtapp.resources.models.DialysisStatusUpdateRequestDto;
+import com.nkit.hospmgmtapp.resources.models.*;
 import com.nkit.hospmgmtapp.services.BillingMgmtService;
 import com.nkit.hospmgmtapp.services.DialysisScheduleService;
+import com.nkit.hospmgmtapp.validators.annotations.ValidDate;
 import jakarta.validation.Valid;
+
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -47,9 +46,6 @@ public class DialysisSchedulerController {
       @RequestParam(required = false) String dateFrom,
       @RequestParam(required = false) String dateTo,
       @RequestParam(required = false) Long patientId) {
-    // TODO:
-    //  - dateFrom and dateTo must be valid.
-    //  - dateFrom must be previous/same of dateTo.
     return new ResponseEntity<>(
         dialysisScheduleService.getDialysisSchedules(dateFrom, dateTo, patientId), OK);
   }
