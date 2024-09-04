@@ -24,7 +24,8 @@ public class InsuranceE implements Serializable {
   @SequenceGenerator(
       name = "insurance_id_seq_gen",
       sequenceName = "insurance_id_seq_gen",
-      initialValue = 1)
+      initialValue = 1,
+      allocationSize = 1)
   @Column(name = "insurance_id")
   private Long insuranceId;
 

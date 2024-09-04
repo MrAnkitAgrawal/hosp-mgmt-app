@@ -27,7 +27,8 @@ public class DialysisScheduleE implements Serializable {
   @SequenceGenerator(
       name = "d_schedule_id_seq_gen",
       sequenceName = "d_schedule_id_seq_gen",
-      initialValue = 1)
+      initialValue = 1,
+      allocationSize = 1)
   @Column(name = "d_schedule_id", nullable = false, updatable = false)
   private Long dScheduleId;
 

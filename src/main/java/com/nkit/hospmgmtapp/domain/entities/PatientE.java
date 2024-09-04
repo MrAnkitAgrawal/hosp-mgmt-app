@@ -32,7 +32,8 @@ public class PatientE implements Serializable {
   @SequenceGenerator(
       name = "patient_id_seq_gen",
       sequenceName = "patient_id_seq_gen",
-      initialValue = 1)
+      initialValue = 1,
+      allocationSize = 1)
   @Column(name = "patient_id")
   private Long patientId;
 

@@ -14,7 +14,7 @@
 	<name>Hospital Management Application</name>
 	<description>Hospital Management Application</description>
 	<properties>
-		<java.version>21</java.version>
+		<java.version>17</java.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -63,6 +63,7 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>3.3.1</version>
 				<configuration>
 					<excludes>
 						<exclude>

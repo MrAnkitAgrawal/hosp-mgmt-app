@@ -32,7 +32,8 @@ public class BillingE implements Serializable {
   @SequenceGenerator(
       name = "billing_id_seq_gen",
       sequenceName = "billing_id_seq_gen",
-      initialValue = 1)
+      initialValue = 1,
+      allocationSize = 1)
   @Column(name = "billing_id")
   private Long billingId;
 
@@ -61,10 +62,9 @@ public class BillingE implements Serializable {
 
   @ManyToMany
   @JoinTable(
-          name = "billing_payment",
-          joinColumns = @JoinColumn(name = "billing_id"),
-          inverseJoinColumns = @JoinColumn(name = "payment_id")
-  )
+      name = "billing_payment",
+      joinColumns = @JoinColumn(name = "billing_id"),
+      inverseJoinColumns = @JoinColumn(name = "payment_id"))
   private List<PaymentE> billPayments = new ArrayList<>();
 
   @ManyToOne

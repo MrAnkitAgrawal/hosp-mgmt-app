@@ -26,7 +26,11 @@ public class DialysisSlotE implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "d_slot_seq_gen")
-  @SequenceGenerator(name = "d_slot_seq_gen", sequenceName = "d_slot_seq_gen", initialValue = 1)
+  @SequenceGenerator(
+      name = "d_slot_seq_gen",
+      sequenceName = "d_slot_seq_gen",
+      initialValue = 1,
+      allocationSize = 1)
   @Column(name = "d_slot_id", nullable = false, updatable = false)
   private Long id;
 

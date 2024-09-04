@@ -32,7 +32,8 @@ public class PaymentE implements Serializable {
   @SequenceGenerator(
       name = "payment_id_seq_gen",
       sequenceName = "payment_id_seq_gen",
-      initialValue = 1)
+      initialValue = 1,
+      allocationSize = 1)
   @Column(name = "payment_id", nullable = false, updatable = false)
   private Long paymentId;
 

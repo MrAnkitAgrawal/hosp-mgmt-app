@@ -15,6 +15,7 @@ import lombok.ToString;
 @NoArgsConstructor
 public class DialysisScheduleResponseDto {
   private Long scheduleID;
+  private Long patientId;
   private String patientName;
   private String patientMobileNumber;
   private String scheduleDate;
@@ -24,6 +25,8 @@ public class DialysisScheduleResponseDto {
 
   public DialysisScheduleResponseDto(DialysisScheduleE scheduleE) {
     this.scheduleID = scheduleE.getDScheduleId();
+    this.patientId =
+        scheduleE.getPatientE() != null ? scheduleE.getPatientE().getPatientId() : null;
     this.patientName =
         scheduleE.getPatientE().getFirstName()
             + (isBlank(scheduleE.getPatientE().getMiddleName())

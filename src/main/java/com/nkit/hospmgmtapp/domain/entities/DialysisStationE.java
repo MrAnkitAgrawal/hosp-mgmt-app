@@ -29,7 +29,8 @@ public class DialysisStationE implements Serializable {
   @SequenceGenerator(
       name = "d_station_seq_gen",
       sequenceName = "d_station_seq_gen",
-      initialValue = 1)
+      initialValue = 1,
+      allocationSize = 1)
   @Column(name = "d_station_id")
   private Long id;
 

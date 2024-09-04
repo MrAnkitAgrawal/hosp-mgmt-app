@@ -20,7 +20,8 @@ public class BillItemE implements Serializable {
   @SequenceGenerator(
       name = "bill_item_seq_gen",
       sequenceName = "bill_item_seq_gen",
-      initialValue = 1)
+      initialValue = 1,
+      allocationSize = 1)
   @Column(name = "bill_item_id")
   private Long itemId;
 
