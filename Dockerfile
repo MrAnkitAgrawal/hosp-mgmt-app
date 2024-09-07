@@ -6,7 +6,6 @@ EXPOSE 8080
 
 COPY target/hosp-mgmt-app-0.0.1-SNAPSHOT.jar hosp-mgmt-app.jar
 
-#ENV PROFILE=postgres
-ENV PROFILE=h2
+ENV DB_PROFILE=h2
 
-ENTRYPOINT ["sh", "-c", "java -jar -Dspring.profiles.active=${PROFILE} hosp-mgmt-app.jar"]
+ENTRYPOINT ["sh", "-c", "java -jar -Dspring.profiles.active=${DB_PROFILE} hosp-mgmt-app.jar"]

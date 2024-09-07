@@ -1,0 +1,6 @@
+PG_HOST=host.docker.internal
+PG_PORT=5432
+PG_SCHEMA=nbhdb
+PG_USERNAME=nbhdbadmin
+PG_PASSWD=***
+DB_PROFILE=postgres

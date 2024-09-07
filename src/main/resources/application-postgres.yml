@@ -2,10 +2,10 @@ spring:
   application:
     name: Hospital Management Application
   datasource:
-    url: jdbc:postgresql://localhost:5432/nbhdb
+    url: jdbc:postgresql://${PG_HOST:localhost}:${PG_PORT:5432}/${PG_SCHEMA:nbhdb}
     driverClassName: org.postgresql.Driver
-    username: nbhdbadmin
-    password: nbhdbadmin
+    username: ${PG_USERNAME:nbhdbadmin}
+    password: ${PG_PASSWD:SkyDreamer@2024}
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
