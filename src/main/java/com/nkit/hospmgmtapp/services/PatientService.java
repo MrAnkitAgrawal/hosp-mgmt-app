@@ -3,6 +3,8 @@ package com.nkit.hospmgmtapp.services;
 import static com.nkit.hospmgmtapp.domain.entities.BillStatus.*;
 import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.*;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.StringUtils.getDigits;
+import static org.apache.commons.lang3.StringUtils.isAllBlank;
 
 import com.nkit.hospmgmtapp.domain.entities.BillingE;
 import com.nkit.hospmgmtapp.domain.entities.PatientE;
@@ -18,8 +20,10 @@ import com.nkit.hospmgmtapp.resources.models.PaymentDto;
 import jakarta.transaction.Transactional;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -34,10 +38,49 @@ public class PatientService {
     PatientE patientE = new PatientE(patientDto);
     patientE.getInsurances().forEach(i -> i.setPatientE(patientE));
 
+    Optional<PatientE> ePatient = doesPatientAlreadyExist(patientE);
+    if (ePatient.isPresent()) {
+      throw new RuntimeException(PATIENT_ALREADY_EXISTS + ePatient.get().getPatientId());
+    }
+
     Long patientId = patientR.save(patientE).getPatientId();
     insuranceR.saveAll(patientE.getInsurances());
 
     return patientId;
+  }
+
+  private Optional<PatientE> doesPatientAlreadyExist(PatientE rPatientE) {
+    List<PatientE> ePatientEs = patientR.findByFirstName(rPatientE.getFirstName());
+
+    return ePatientEs.stream()
+        .filter(
+            ePatientE -> {
+              // Aadhar Matching
+              boolean isAadharMatching =
+                  !isAllBlank(ePatientE.getAadharNumber(), rPatientE.getAadharNumber())
+                      && StringUtils.equals(
+                          getDigits(ePatientE.getAadharNumber()),
+                          getDigits(rPatientE.getAadharNumber()));
+              if (isAadharMatching) {
+                return true;
+              }
+
+              // Name & DOB Matching
+              final String rMiddleName = rPatientE.getMiddleName();
+              final String eMiddleName = ePatientE.getMiddleName();
+              final String rLastName = rPatientE.getLastName();
+              final String eLastName = ePatientE.getLastName();
+
+              boolean isMiddleNameMatching =
+                  isAllBlank(rMiddleName, eMiddleName)
+                      || StringUtils.equals(rMiddleName, eMiddleName);
+              boolean isLastNameMatching =
+                  isAllBlank(rLastName, eLastName) || StringUtils.equals(rLastName, eLastName);
+              boolean isDOBMatching = ePatientE.getDob().isEqual(rPatientE.getDob());
+
+              return isMiddleNameMatching && isLastNameMatching && isDOBMatching;
+            })
+        .findFirst();
   }
 
   public PatientDto retrievePatientById(Long patientId) {
