@@ -27,7 +27,7 @@ create table billing (
         billing_timestamp timestamp(6) not null,
         d_schedule_id bigint unique,
         patient_id bigint not null,
-        bill_status varchar(255) check (bill_status in ('OPEN','DUE','PARTIALLY_PAID','PAID')),
+        bill_status varchar(255),
         billing_head varchar(255) not null,
         billing_remarks varchar(255),
         primary key (billing_id)
@@ -46,7 +46,7 @@ create table dialysis_schedule (
         d_station_id bigint not null,
         patient_id bigint not null,
         update_timestamp timestamp(6) not null,
-        d_schedule_status varchar(255) not null check (d_schedule_status in ('AVAILABLE','SCHEDULED','CANCELLED','COMPLETED')),
+        d_schedule_status varchar(255) not null,
         doctor_name varchar(255),
         nursing_staff varchar(255),
         primary key (d_schedule_id)
@@ -57,7 +57,7 @@ create table dialysis_slot (
         d_slot_end_time time(6) not null,
         d_slot_start_time time(6) not null,
         d_slot_id bigint not null,
-        d_slot_name varchar(255) not null check (d_slot_name in ('MORNING','AFTER_NOON','EVENING','NIGHT')),
+        d_slot_name varchar(255) not null,
         primary key (d_slot_id)
 );
 
@@ -67,7 +67,7 @@ create table dialysis_station (
         d_station_id bigint not null,
         bed_number varchar(255) not null,
         dialysis_machine_number varchar(255) not null,
-        dialysis_station_status varchar(255) not null check (dialysis_station_status in ('ACTIVE','UNDER_MAINTENANCE','OUT_OF_SERVICE')),
+        dialysis_station_status varchar(255) not null,
         label varchar(255) not null,
         last_maintenance_details varchar(255),
         primary key (d_station_id)
@@ -89,7 +89,7 @@ create table patient (
         aadhar_number varchar(255),
         email_id varchar(255),
         first_name varchar(255) not null,
-        gender varchar(255) check (gender in ('MALE','FEMALE')),
+        gender varchar(255),
         last_name varchar(255) not null,
         middle_name varchar(255),
         mobile_number varchar(255),
@@ -102,9 +102,9 @@ create table payment (
         patient_id bigint not null,
         payment_id bigint not null,
         payment_timestamp timestamp(6) not null,
-        payment_mode varchar(255) not null check (payment_mode in ('CASH','CARD','TPA')),
+        payment_mode varchar(255) not null,
         payment_remark varchar(255),
-        payment_type varchar(255) not null check (payment_type in ('ADVANCE','BILL_PAYMENT')),
+        payment_type varchar(255) not null,
         primary key (payment_id)
 );
 

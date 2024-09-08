@@ -5,8 +5,11 @@ import static com.nkit.hospmgmtapp.utils.HospMgmtUtils.parseDateToString;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.nkit.hospmgmtapp.domain.entities.Gender;
 import com.nkit.hospmgmtapp.domain.entities.PatientE;
 import com.nkit.hospmgmtapp.validators.annotations.NotFutureDate;
+import com.nkit.hospmgmtapp.validators.annotations.ValidEnum;
+import com.nkit.hospmgmtapp.validators.annotations.ValidNumber;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -44,11 +47,12 @@ public class PatientDto {
   private String dob;
 
   @JsonProperty("gender")
-  @NotBlank(message = "PATIENT_GENDER_NOT_PROVIDED")
+  @NotNull(message = PATIENT_GENDER_NOT_PROVIDED)
+  @ValidEnum(targetClassType = Gender.class, message = PATIENT_GENDER_INVALID)
   private String gender;
 
   @JsonProperty("aadharNumber")
-  // @TODO add invalid format constraint
+  @ValidNumber(length = 12, message = AADHAR_NUMBER_INVALID)
   private String aadharNumber;
 
   @JsonProperty("mobileNumber")
