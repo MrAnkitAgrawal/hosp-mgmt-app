@@ -6,13 +6,13 @@ import static com.nkit.hospmgmtapp.utils.HospMgmtUtils.parseDateToString;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.nkit.hospmgmtapp.domain.entities.PatientE;
+import com.nkit.hospmgmtapp.validators.annotations.NotFutureDate;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -40,6 +40,7 @@ public class PatientDto {
 
   @JsonProperty("dateOfBirth")
   @NotBlank(message = PATIENT_DOB_NOT_PROVIDED)
+  @NotFutureDate(message = PATIENT_DOB_IS_INVALID)
   private String dob;
 
   @JsonProperty("gender")
