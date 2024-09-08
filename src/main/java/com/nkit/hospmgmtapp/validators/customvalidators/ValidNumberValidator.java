@@ -17,6 +17,6 @@ public class ValidNumberValidator implements ConstraintValidator<ValidNumber, St
 
   @Override
   public boolean isValid(String value, ConstraintValidatorContext constraintValidatorContext) {
-      return isBlank(value) || (isNumericSpace(value) && length(getDigits(value)) <= length);
+      return isBlank(value) || (isNumericSpace(value) && length(getDigits(value)) == length);
   }
 }
