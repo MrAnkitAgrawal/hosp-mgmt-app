@@ -38,7 +38,6 @@ public class PatientDto {
   private String middleName;
 
   @JsonProperty("lastName")
-  @NotBlank(message = PATIENT_LAST_NAME_NOT_PROVIDED)
   private String lastName;
 
   @JsonProperty("dateOfBirth")

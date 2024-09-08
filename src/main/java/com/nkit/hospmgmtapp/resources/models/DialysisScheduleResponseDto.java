@@ -1,7 +1,7 @@
 package com.nkit.hospmgmtapp.resources.models;
 
+import static com.nkit.hospmgmtapp.utils.HospMgmtUtils.formatName;
 import static com.nkit.hospmgmtapp.utils.HospMgmtUtils.parseDateToString;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.nkit.hospmgmtapp.domain.entities.DialysisScheduleE;
 import lombok.Getter;
@@ -25,15 +25,12 @@ public class DialysisScheduleResponseDto {
 
   public DialysisScheduleResponseDto(DialysisScheduleE scheduleE) {
     this.scheduleID = scheduleE.getDScheduleId();
-    this.patientId =
-        scheduleE.getPatientE() != null ? scheduleE.getPatientE().getPatientId() : null;
+    this.patientId = scheduleE.getPatientE().getPatientId();
     this.patientName =
-        scheduleE.getPatientE().getFirstName()
-            + (isBlank(scheduleE.getPatientE().getMiddleName())
-                ? ""
-                : " " + scheduleE.getPatientE().getMiddleName())
-            + " "
-            + scheduleE.getPatientE().getLastName();
+        formatName(
+            scheduleE.getPatientE().getFirstName(),
+            scheduleE.getPatientE().getMiddleName(),
+            scheduleE.getPatientE().getLastName());
     this.patientMobileNumber = scheduleE.getPatientE().getOtherMobileNumber();
     this.scheduleDate = parseDateToString(scheduleE.getScheduleDate());
     this.dialysisStation = scheduleE.getDialysisStationE().getStationLabel();

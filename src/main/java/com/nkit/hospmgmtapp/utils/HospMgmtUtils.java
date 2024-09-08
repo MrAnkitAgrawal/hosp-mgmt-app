@@ -1,16 +1,12 @@
 package com.nkit.hospmgmtapp.utils;
 
-import static com.nkit.hospmgmtapp.domain.entities.BillStatus.PAID;
-import static com.nkit.hospmgmtapp.domain.entities.BillStatus.PARTIALLY_PAID;
-import static com.nkit.hospmgmtapp.exceptionhandler.ExceptionKey.PAID_AMOUNT_IS_MORE_THAN_BILL;
+
 import static com.nkit.hospmgmtapp.utils.HospMgmtConstants.DATE_PATTERN;
 import static java.time.LocalDate.parse;
 import static java.time.format.DateTimeFormatter.ofPattern;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import com.nkit.hospmgmtapp.domain.entities.BillStatus;
-import com.nkit.hospmgmtapp.domain.entities.BillingE;
-import com.nkit.hospmgmtapp.domain.entities.PaymentE;
 import java.time.LocalDate;
 
 public class HospMgmtUtils {
@@ -30,5 +26,11 @@ public class HospMgmtUtils {
       return null;
     }
     return date.format(ofPattern(DATE_PATTERN));
+  }
+
+  public static String formatName(String firstName, String middleName, String lastName) {
+    return firstName
+        + (isBlank(middleName) ? "" : " " + middleName)
+        + (isBlank(lastName) ? "" : " " + lastName);
   }
 }
